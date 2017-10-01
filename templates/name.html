@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>What should we call you?</h1>
+
+<form action='/habit', method='POST'>
+    <input type='text' name='name'>
+    <input type='submit' value='thats me!'>
+</form>
+
+{% endblock %}

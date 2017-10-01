@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Which habit?</h1>
+
+<form action='/time' method='POST'>
+    <select name='habit'>
+        <option value='medite'>meditate</option>
+        <option value='no-screen'>no screen</option>
+        <option value='jog'>jog</option>
+    </select>
+    <input type='submit'>
+</form>
+
+{% endblock %}

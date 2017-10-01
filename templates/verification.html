@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Verify yo self!</h1>
+
+<ul>
+{% for message in get_flashed_messages() %}
+<li> {{ message }} </li>
+{% endfor %}
+</ul>
+
+<form action='/signin', method='POST'>
+    <input type='text' name='code'>
+    <input type='submit' value='Verify me!'>
+</form>
+
+{% endblock %}

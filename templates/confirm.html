@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Excellent! {{ name }} You're confirmed!</h1>
+<p>your mobile: {{ mobile }} <p>
+<p>your habit: {{ habit }} </p>
+<p>hour: {{ hour }} </p>
+<p> timezone: {{ tz }} </p>
+
+<p> for our purposes, your time is saved in UTC </p>
+<p> utc hour: {{ utc_hour }} 
+
+{% endblock %}

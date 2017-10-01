@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Habitify is awesome! Sign up!</h1>
+
+<form action='/verify', method='GET'>
+    <input type='text' name='mobile'>
+    <input type='submit' value='Lets do this!'>
+</form>
+
+{% endblock %}
