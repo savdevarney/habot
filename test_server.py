@@ -22,7 +22,7 @@ def job():
     message = client.messages.create(
         messaging_service_sid=messaging_service_sid,
         to="+18028253270",
-        from_="+14158539047",
+        from_=twilio_from,
         body="if you receive this text - then the scheduling task works!")
 
     print "the scheduling script ran"
