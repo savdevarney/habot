@@ -13,6 +13,7 @@ account_sid = os.environ["TWILIO_ACCOUNT_SID"]
 auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 messaging_service_sid = os.environ["TWILIO_MESSAGING_SERVICE_SID"]
 twilio_from = os.environ["TWILIO_FROM_NUMBER"]
+twilio_to = os.environ["TWILIO_TEST_TO_NUMBER"]
 client = Client(account_sid, auth_token)
 
 def job():
@@ -21,7 +22,7 @@ def job():
 
     message = client.messages.create(
         messaging_service_sid=messaging_service_sid,
-        to="+18028253270",
+        to=twilio_to,
         from_=twilio_from,
         body="if you receive this text - then the scheduling task works!")
 
