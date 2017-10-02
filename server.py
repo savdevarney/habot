@@ -1,16 +1,16 @@
 import os
 from flask import Flask, request, render_template, session, redirect, jsonify, flash
-#from flask_debugtoolbar import DebugToolbarExtension
 #from model import connect_to_db
-from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 import schedule
 import time
-import json
+from threading import Thread
 from send_sms import *
 
 app = Flask(__name__)
 app.secret_key = 'ABCSECRETDEF'
+
+start_time = time.time()
 
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
 auth_token = os.environ["TWILIO_AUTH_TOKEN"]
@@ -232,17 +232,25 @@ def show_confirmation():
 #     for example: "well done, {Sav}! That's {5} days in a row"! """
 
 
+def run_schedule():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 
 
 
 if __name__ == "__main__":
-    app.debug = True
-    app.run(host="0.0.0.0")
+    # set the schedule for sending daily nudges:
     schedule.every(1).minutes.do(send_daily_nudge)
-    while True: 
-        schedule.run_pending()
-        time.sleep(1)
+    
+    # establish the thread:
+    t = Thread(target=run_schedule)
+    t.start()
+    print"Schedule is running. Start time: " + str(start_time)
+
+    app.run(host="0.0.0.0", port=5000, debug=True)
+    
 
     # connect_to_db(app)
 

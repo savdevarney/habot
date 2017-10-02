@@ -13,7 +13,7 @@ twilio_to = os.environ["TWILIO_TEST_TO_NUMBER"]
 client = Client(account_sid, auth_token)
 
 
-def job():
+def test_nudges():
     """ send reminders sms messages to every user that should receive at that hour 
     to test: sending 1 test message every minute while running flask app """
 
@@ -23,7 +23,8 @@ def job():
         from_=twilio_from,
         body="if you receive this text - then the scheduling task works!")
 
-    print "the scheduling script ran"
+    print "the scheduling task test_nudges ran!"
+    print "time run:" + str(time.time() - start_time)
     print(message.sid)
 
 schedule.every(1).minutes.do(job)

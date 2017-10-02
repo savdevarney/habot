@@ -1,5 +1,6 @@
 import os
 from twilio.rest import Client
+import time
 import arrow
 import random
 from flask import session
@@ -45,7 +46,7 @@ def send_daily_nudge():
         from_=twilio_from,
         body="if you receive this text - then the scheduling task works!")
 
-    print "the scheduling script ran"
+    print "the scheduling script ran @ {}".format(time.time())
     print(message.sid)
 
     # utc_now = arrow.utcnow()
