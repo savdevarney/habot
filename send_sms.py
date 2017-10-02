@@ -52,7 +52,7 @@ def send_daily_nudge():
     # hour = utc_now.hour
 
 
-    # users = # database query for anyone with time.hour == hour in USER-HABITS time variable joined with user-habit table
+    # users = # database query for user with time.hour == hour in USER-HABITS time variable joined with user-habit table
 
     # for user in users: 
     #     name = user.name
