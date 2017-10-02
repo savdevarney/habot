@@ -1,14 +1,9 @@
 """ test file to work out schedule functionality """
 
 import os
-from flask import Flask, request, render_template, session, redirect, jsonify, flash
 from twilio.rest import Client
 import schedule
 import time
-import test_schedule
-
-app = Flask(__name__)
-app.secret_key = 'ABCSECRETDEF'
 
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
 auth_token = os.environ["TWILIO_AUTH_TOKEN"]
@@ -31,14 +26,9 @@ def job():
     print "the scheduling script ran"
     print(message.sid)
 
-
-if __name__ == "__main__":
-    app.debug = True
-    app.run(host="0.0.0.0")
-    schedule.every(1).minutes.do(job)
-    while True: 
-        schedule.run_pending()
-        time.sleep(1)
+schedule.every(1).minutes.do(job)
 
 
-    
+while True:
+    schedule.run_pending()
+    time.sleep(1)
