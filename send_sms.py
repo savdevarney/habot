@@ -40,6 +40,16 @@ def send_code(mobile, verification_code):
 def send_daily_nudge():
     """ send reminders sms messages to every user that should receive at that hour """
 
+    utc_now = arrow.utcnow()
+    hour_now = utc_now.hour
+
+    # users = # database query for user with time.hour == hour in USER-HABITS time variable joined with user-habit table
+
+    # for user in users: 
+    #     name = user.name
+    #     mobile = user.mobile
+    #     habit = Create_habit_description
+
     message = client.messages.create(
         messaging_service_sid=messaging_service_sid,
         to=twilio_to,
@@ -49,16 +59,10 @@ def send_daily_nudge():
     print "the scheduling script ran @ {}".format(time.time())
     print(message.sid)
 
-    # utc_now = arrow.utcnow()
-    # hour = utc_now.hour
+    
 
 
-    # users = # database query for user with time.hour == hour in USER-HABITS time variable joined with user-habit table
 
-    # for user in users: 
-    #     name = user.name
-    #     mobile = user.mobile
-    #     habit = Create_habit_description
     #     message = client.messages.create(
     #         messaging_service_sid=messaging_service_sid,
     #         to="{}".format(,

@@ -4,6 +4,8 @@ from flask import Flask, request, render_template, session, redirect, jsonify, f
 from twilio.rest import Client
 import schedule
 import time
+import datetime
+import pytz
 from threading import Thread
 from send_sms import *
 
@@ -198,15 +200,26 @@ def show_confirmation():
 
     hour = int(request.form.get("hour"))
     tz = request.form.get("tz")
-    offsets = {'US/Eastern': -5, 'US/Central': -6, 'US/Mountain': -7, 'US/Pacific': -8}
-    utc_hour = hour - offsets[tz]
-    if utc_hour < 0:
-        utc_hour += 24
+    # make sure the tz value from form is string that arrow needs.
+    # may consider using pytz.all_timezones
+
+    # create an arrow object, replace hour and timezone.
+    dt = arrow.now()
+    habit_time = dt.replace(hour=int('{}'.format(hour)), tzinfo='{}'.format(tz))
+
+    # convert to UTC and extract hour to store seperately
+    habit_UTC_time = habit_time.to('UTC')
+    habit_UTC_hour = habit_UTC_time.hour # an integer
+
+    # may need to utilize .format arrow method to store in postgres:
+    # habit_UTC_time = habit_UTC_time.format('YYYY-MM-DD HH:mm:ss ZZ')
    
     # store to user-habits table
+    user_id
+    create_habit_id #from session
 
     name = session['name']
-    habit = session['habit']
+    habit = session['habit'] # should be an id
     mobile = session['mobile']
 
     return render_template('confirm.html', name=name, mobile=mobile, habit=habit, hour=hour, tz=tz, utc_hour=utc_hour)
