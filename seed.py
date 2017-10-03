@@ -13,7 +13,7 @@ def load_users():
     User.query.delete()
 
     #open and parse users.csv file
-    for row in open("users.csv"):
+    for row in open("data/users.csv"):
         row = row.rstrip()
         user_id, name, mobile, is_partner = row.split(",")
    
@@ -34,10 +34,11 @@ def load_create_habits():
     CreateHabit.query.delete()
 
     #open and parse habit file
-    for row in open("create-habits.csv"):
+    for row in open("data/create-habits.csv"):
         row = row.rstrip()
-        create_habit_id, create_habit_title, 
-        create_habit_description, create_habit_hour = row.split(",")
+        fields = [field if field != 'null' else None for field in row.split(",")]
+        (create_habit_id, create_habit_title, 
+        create_habit_description, create_habit_hour) = fields
 
         #create habit
         habit = CreateHabit(create_habit_id=create_habit_id,
@@ -59,10 +60,11 @@ def load_user_habits():
     UserHabit.query.delete()
 
     #open and parse user-habits file
-    for row in open("user-habits.csv"):
+    for row in open("data/user-habits.csv"):
         row = row.rstrip()
-        habit_id, user_id, create_habit_id, break_habit_id,
-        current, tz, time, utc_time, utc_hour, partner_id = row.split(",")
+        fields = [field if field != 'null' else None for field in row.split(",")]
+        (habit_id, user_id, create_habit_id, break_habit_id,
+        current, tz, time, utc_time, utc_hour, partner_id) = fields
 
         #create user-habit
         user_habit = UserHabit(habit_id=habit_id, user_id=user_id,
@@ -85,22 +87,18 @@ def load_successes():
     Success.query.delete()
 
     #open and parse successes file
-    for row in open("successes.csv"):
+    for row in open("data/successes.csv"):
         row = row.rstrip()
         success_id, habit_id, mobile, time = row.split(",")
 
         #create success
-        success = Success(success_id=success_id, habit_id=habit_id, time=time)
+        success = Success(success_id=success_id, habit_id=habit_id, mobile=mobile, time=time)
 
         #add success
         db.session.add(success)
 
     #submit success
     db.session.commit()
-
-
-    
-
 
 
 def set_val_user_id():
@@ -136,7 +134,7 @@ def set_val_habit_id():
     max_id = int(result[0])
 
     # Set the value for the next success_id to be max_id + 1
-    query = "SELECT setval('user-habits_habit_id_seq', :new_id)"
+    query = "SELECT setval('user_habits_habit_id_seq', :new_id)"
     db.session.execute(query, {'new_id': max_id + 1})
     db.session.commit()
 
@@ -149,7 +147,8 @@ if __name__ == "__main__":
 
     # populate data into tables:
     load_users()
-    load_habits()
+    load_create_habits()
+    load_user_habits()
     load_successes()
     set_val_user_id()
     set_val_success_id()

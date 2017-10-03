@@ -28,11 +28,11 @@ class User(db.Model):
 class UserProfile(db.Model):
     """profile of user factors selected at onboarding"""
 
-    __tablename__ = "user-profiles"
+    __tablename__ = "user_profiles"
 
     user_profile_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    profile_id = db.Column(db.Integer, db.ForeignKey('profile-factors.profile_id'), nullable=False)
+    profile_id = db.Column(db.Integer, db.ForeignKey('profile_factors.profile_id'), nullable=False)
 
     def __repr__(self):
         """ shows information about association """
@@ -44,7 +44,7 @@ class UserProfile(db.Model):
 class ProfileFactor(db.Model):
     """ profile attributes a user selects as true during onboarding """
 
-    __tablename__ = "profile-factors"
+    __tablename__ = "profile_factors"
 
     profile_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     factor_description = db.Column(db.String(50), nullable=False)
@@ -59,11 +59,11 @@ class ProfileFactor(db.Model):
 class BreakHabit(db.Model):
     """ habits a user can select to break """
 
-    __tablename__ = "break-habits"
+    __tablename__ = "break_habits"
 
     break_habit_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     break_habit_title = db.Column(db.String(50), nullable=False)
-    break_habit_description = db.Column(db.String(50), nullable=False)
+    break_habit_description = db.Column(db.String(100), nullable=False)
     break_habit_hour = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
@@ -76,11 +76,11 @@ class BreakHabit(db.Model):
 class CreateHabit(db.Model):
     """ habits a user can select to create """
 
-    __tablename__ = "create-habits"
+    __tablename__ = "create_habits"
 
     create_habit_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     create_habit_title = db.Column(db.String(50), nullable=False)
-    create_habit_description = db.Column(db.String(50), nullable=False)
+    create_habit_description = db.Column(db.String(100), nullable=False)
     create_habit_hour = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
@@ -93,11 +93,11 @@ class CreateHabit(db.Model):
 class ReplaceHabit(db.Model):
     """Tracks associations between break habits and the create habits that can replace them"""
 
-    __tablename__ = "replace-habits"
+    __tablename__ = "replace_habits"
 
     association_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     break_habit_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    create_habit_id = db.Column(db.Integer, db.ForeignKey('profile-factors.profile_id'), nullable=False)
+    create_habit_id = db.Column(db.Integer, db.ForeignKey('profile_factors.profile_id'), nullable=False)
 
     def __repr__(self):
         """ shows information about association """
@@ -109,12 +109,12 @@ class ReplaceHabit(db.Model):
 class UserHabit(db.Model):
     """ information about the habit a user selected and is working on tracking """
 
-    __tablename__ = "user-habits"
+    __tablename__ = "user_habits"
 
     habit_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    create_habit_id = db.Column(db.Integer, db.ForeignKey('create-habits.create_habit_id'), nullable=False)
-    break_habit_id = db.Column(db.Integer, db.ForeignKey('break-habits.break_habit_id'), nullable=True)
+    create_habit_id = db.Column(db.Integer, db.ForeignKey('create_habits.create_habit_id'), nullable=False)
+    break_habit_id = db.Column(db.Integer, db.ForeignKey('break_habits.break_habit_id'), nullable=True)
     current = db.Column(db.Boolean, nullable=False)
     tz = db.Column(db.String(15), nullable=False)
     time = db.Column(db.DateTime(timezone=True), nullable=False)
@@ -135,7 +135,7 @@ class Success(db.Model):
     __tablename__ = "successes"
 
     success_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    habit_id = db.Column(db.Integer, db.ForeignKey('user-habits.habit_id'), nullable=False)
+    habit_id = db.Column(db.Integer, db.ForeignKey('user_habits.habit_id'), nullable=False)
     mobile = db.Column(db.String(15), nullable=False)
     time = db.Column(db.DateTime(timezone=True), nullable=False)
 
