@@ -38,7 +38,8 @@ def collect_successes():
     user_mobile = success_dict['originalRequest']['data']['From']
     
     # extract time (time API.ai agent tracks success) - ex: 2017-10-01T15:40:08.959Z
-    time = success_dict['timestamp']
+    time = arrow.get(success_dict['timestamp'])
+    time = time.format('YYYY-MM-DD HH:mm:ss ZZ')
    
     return 'JSON posted'
     
@@ -210,13 +211,12 @@ def show_confirmation():
     # create an arrow object, replace hour and timezone.
     dt = arrow.now()
     time = dt.replace(hour=int('{}'.format(hour)), tzinfo='{}'.format(tz))
+    time = time.format('YYYY-MM-DD HH:mm:ss ZZ')
 
     # convert to UTC and extract hour to store seperately
-    UTC_time = habit_time.to('UTC')
-    UTC_hour = habit_UTC_time.hour # an integer
-
-    # may need to utilize .format arrow method to store in postgres:
-    # UTC_time = UTC_time.format('YYYY-MM-DD HH:mm:ss ZZ')
+    UTC_time = time.to('UTC')
+    UTC_hour = UTC_time.hour # an integer
+    UTC_time = UTC_time.format('YYYY-MM-DD HH:mm:ss ZZ')
    
     # store to user-habits table
     user_id

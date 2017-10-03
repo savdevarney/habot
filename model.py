@@ -62,6 +62,7 @@ class BreakHabit(db.Model):
     __tablename__ = "break-habits"
 
     break_habit_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    break_habit_title = db.Column(db.String(50), nullable=False)
     break_habit_description = db.Column(db.String(50), nullable=False)
     break_habit_hour = db.Column(db.Integer, nullable=False)
 
@@ -78,6 +79,7 @@ class CreateHabit(db.Model):
     __tablename__ = "create-habits"
 
     create_habit_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    create_habit_title = db.Column(db.String(50), nullable=False)
     create_habit_description = db.Column(db.String(50), nullable=False)
     create_habit_hour = db.Column(db.Integer, nullable=False)
 
@@ -114,6 +116,7 @@ class UserHabit(db.Model):
     create_habit_id = db.Column(db.Integer, db.ForeignKey('create-habits.create_habit_id'), nullable=False)
     break_habit_id = db.Column(db.Integer, db.ForeignKey('break-habits.break_habit_id'), nullable=True)
     current = db.Column(db.Boolean, nullable=False)
+    tz = db.Column(db.String(15), nullable=False)
     time = db.Column(db.DateTime(timezone=True), nullable=False)
     utc_time = db.Column(db.DateTime(timezone=True), nullable=False)
     utc_hour = db.Column(db.Integer, nullable=False)
@@ -133,7 +136,7 @@ class Success(db.Model):
 
     success_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     habit_id = db.Column(db.Integer, db.ForeignKey('user-habits.habit_id'), nullable=False)
-    message_id = db.Column(db.Integer, nullable=False)
+    mobile = db.Column(db.String(15), nullable=False)
     time = db.Column(db.DateTime(timezone=True), nullable=False)
 
     def __repr__(self):
