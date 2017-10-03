@@ -1,16 +1,20 @@
 import os
 from flask import Flask, request, render_template, session, redirect, jsonify, flash
-#from model import connect_to_db
+from jinja2 import StrictUndefined
 from twilio.rest import Client
 import schedule
 import time
 import datetime
-import pytz
+import arrow
 from threading import Thread
 from send_sms import *
+from model import connect_to_db, db, User, CreateHabit, UserHabit, Success
 
 app = Flask(__name__)
 app.secret_key = 'ABCSECRETDEF'
+
+# raise errors if there are undefined variables in Jinja2
+app.jinja_env.undefined = StrictUndefined
 
 start_time = time.time()
 
@@ -205,14 +209,14 @@ def show_confirmation():
 
     # create an arrow object, replace hour and timezone.
     dt = arrow.now()
-    habit_time = dt.replace(hour=int('{}'.format(hour)), tzinfo='{}'.format(tz))
+    time = dt.replace(hour=int('{}'.format(hour)), tzinfo='{}'.format(tz))
 
     # convert to UTC and extract hour to store seperately
-    habit_UTC_time = habit_time.to('UTC')
-    habit_UTC_hour = habit_UTC_time.hour # an integer
+    UTC_time = habit_time.to('UTC')
+    UTC_hour = habit_UTC_time.hour # an integer
 
     # may need to utilize .format arrow method to store in postgres:
-    # habit_UTC_time = habit_UTC_time.format('YYYY-MM-DD HH:mm:ss ZZ')
+    # UTC_time = UTC_time.format('YYYY-MM-DD HH:mm:ss ZZ')
    
     # store to user-habits table
     user_id
@@ -262,11 +266,11 @@ if __name__ == "__main__":
     t.start()
     print"Schedule is running. Start time: " + str(start_time)
 
+    # connect to db
+    connect_to_db(app)
+
     app.run(host="0.0.0.0", port=5000, debug=True)
     
-
-    # connect_to_db(app)
-
     # Use the DebugToolbar
     # DebugToolbarExtension(app)
 

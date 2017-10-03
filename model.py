@@ -15,7 +15,7 @@ class User(db.Model):
 
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(25), nullable=False)
-    mobile = db.Column(db.Integer(15), nullable=False)
+    mobile = db.Column(db.String(15), nullable=False)
     is_partner = db.Column(db.Boolean, nullable=False)
 
     def __repr__(self):
@@ -30,6 +30,7 @@ class UserProfile(db.Model):
 
     __tablename__ = "user-profiles"
 
+    user_profile_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     profile_id = db.Column(db.Integer, db.ForeignKey('profile-factors.profile_id'), nullable=False)
 
@@ -62,7 +63,7 @@ class BreakHabit(db.Model):
 
     break_habit_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     break_habit_description = db.Column(db.String(50), nullable=False)
-    break_habit_time = db.Column(db.DateTime(timezone=True), nullable=False)
+    break_habit_hour = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
         """ shows information about the habit """
@@ -78,7 +79,7 @@ class CreateHabit(db.Model):
 
     create_habit_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     create_habit_description = db.Column(db.String(50), nullable=False)
-    create_habit_time = db.Column(db.DateTime(timezone=True), nullable=False)
+    create_habit_hour = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
         """ shows information about the habit """
@@ -92,6 +93,7 @@ class ReplaceHabit(db.Model):
 
     __tablename__ = "replace-habits"
 
+    association_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     break_habit_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     create_habit_id = db.Column(db.Integer, db.ForeignKey('profile-factors.profile_id'), nullable=False)
 
@@ -113,6 +115,8 @@ class UserHabit(db.Model):
     break_habit_id = db.Column(db.Integer, db.ForeignKey('break-habits.break_habit_id'), nullable=True)
     current = db.Column(db.Boolean, nullable=False)
     time = db.Column(db.DateTime(timezone=True), nullable=False)
+    utc_time = db.Column(db.DateTime(timezone=True), nullable=False)
+    utc_hour = db.Column(db.Integer, nullable=False)
     partner_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
 
     def __repr__(self):
@@ -128,9 +132,9 @@ class Success(db.Model):
     __tablename__ = "successes"
 
     success_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    habit_id = db.Column(db.Integer, db.ForeignKey('user-habts.habit_id'), nullable=False)
+    habit_id = db.Column(db.Integer, db.ForeignKey('user-habits.habit_id'), nullable=False)
     message_id = db.Column(db.Integer, nullable=False)
-    date_time = db.Column(db.DateTime(timezone=True), nullable=False)
+    time = db.Column(db.DateTime(timezone=True), nullable=False)
 
     def __repr__(self):
         """ shows information about a success"""
@@ -161,21 +165,12 @@ class Coach(db.Model):
 ##############################################################################
 # Helper functions
 
-def init_app():
-    # So that we can use Flask-SQLAlchemy, we'll make a Flask app.
-    from flask import Flask
-    app = Flask(__name__)
-
-    connect_to_db(app)
-    print "Connected to DB."
-
-
 def connect_to_db(app):
     """Connect the database to the Flask app."""
 
-    # Configure to use our database.
+    # Configure to use the PstgreSQL database.
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///habot'
-    app.config['SQLALCHEMY_ECHO'] = False
+    app.config['SQLALCHEMY_ECHO'] = True
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app
     db.init_app(app)
@@ -185,10 +180,9 @@ if __name__ == "__main__":
     # As a convenience, if we run this module interactively, it will leave
     # you in a state of being able to work with the database directly.
 
-    # So that we can use Flask-SQLAlchemy, we'll make a Flask app.
-    from flask import Flask
-
-    app = Flask(__name__)
-
+    from server import app
     connect_to_db(app)
     print "Connected to DB."
+
+    # create tables
+    db.create_all()

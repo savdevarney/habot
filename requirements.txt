@@ -7,12 +7,14 @@ click==6.7
 cryptography==2.0.3
 enum34==1.1.6
 Flask==0.12.2
+Flask-SQLAlchemy==2.3.0
 idna==2.6
 ipaddress==1.0.18
 itsdangerous==0.24
 Jinja2==2.9.6
 MarkupSafe==1.0
 pkg-resources==0.0.0
+psycopg2==2.7.3.1
 pycparser==2.18
 PyJWT==1.5.3
 pyOpenSSL==17.3.0
@@ -21,6 +23,7 @@ pytz==2017.2
 requests==2.18.4
 schedule==0.4.3
 six==1.11.0
+SQLAlchemy==1.1.14
 twilio==6.7.0
 urllib3==1.22
 Werkzeug==0.12.2
