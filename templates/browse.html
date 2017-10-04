@@ -4,8 +4,8 @@
 <h1>Which habit?</h1>
 
 {% for habit in habits %}
-<form action='/time' method='POST'>
-    <input type="hidden" name="habit" vale="{{ habit.create_habit_id }}">
+<form action='/time' method='GET'>
+    <input type="hidden" name="habit_id" value="{{ habit.create_habit_id }}">
     <input type='submit', value="{{ habit.create_habit_title }}: {{ habit.create_habit_description }}">
 </form>
 {% endfor %}

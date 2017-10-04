@@ -18,12 +18,12 @@ app.jinja_env.undefined = StrictUndefined
 
 start_time = time.time()
 
-account_sid = os.environ["TWILIO_ACCOUNT_SID"]
-auth_token = os.environ["TWILIO_AUTH_TOKEN"]
-messaging_service_sid = os.environ["TWILIO_MESSAGING_SERVICE_SID"]
-twilio_from = os.environ["TWILIO_FROM_NUMBER"]
-twilio_to = os.environ["TWILIO_TEST_TO_NUMBER"]
-client = Client(account_sid, auth_token)
+# account_sid = os.environ["TWILIO_ACCOUNT_SID"]
+# auth_token = os.environ["TWILIO_AUTH_TOKEN"]
+# messaging_service_sid = os.environ["TWILIO_MESSAGING_SERVICE_SID"]
+# twilio_from = os.environ["TWILIO_FROM_NUMBER"]
+# twilio_to = os.environ["TWILIO_TEST_TO_NUMBER"]
+# client = Client(account_sid, auth_token)
 
 
 @app.route('/', methods=['POST'])
@@ -96,31 +96,24 @@ def verify_user():
     # form to collect code and verify
 
 
-@app.route('/signin', methods=['POST'])
+@app.route('/signin', methods=['POST', 'GET'])
 def log_in_user():
     """verifies mobile number via twilio then checks where to send user"""
 
-    code = request.form.get('code')
+    code = request.args.get('code')
     # verify correct code with Twilio
     session['code'] = code
     mobile = session['mobile']
 
     # if correct code:
     if code == session['verification_code']:
-        return redirect('/name')
-    # if incorrect code: 
-    #   return to /verify
+        if (User.query.filter(User.mobile == mobile, User.is_partner == False).first()):
+            return redirect('/dashboard')
+        else:
+            return redirect('/name')
     else:
         flash("The code you entered was incorrect. Please enter the new code sent to you")
         return redirect('/verify?mobile={}'.format(mobile))
-
-    #   if mobile NOT IN USERS:
-    #       put mobile in session
-    #       start onboarding flow
-    #       return redirect('/name')
-    
-    #   if mobile IN USERS:
-    #       redirect to dashboard
 
     # Later TODO: determine if they've completed onboarding, etc. 
  
@@ -149,7 +142,7 @@ def onboarding_step1():
 #     # displays list of profile-factors.  User selects and submits.
 
 
-@app.route('/habit', methods=['POST'])
+@app.route('/habit', methods=['POST', 'GET'])
 def onboarding_step2():
     """ first step of new habit process """
 
@@ -157,7 +150,7 @@ def onboarding_step2():
     # if break - /habit-break-recs
     # if new - /habit-recs 
 
-    name = request.form.get('name')
+    name = request.args.get('name')
     session['name'] = name
 
     habits = CreateHabit.query.all()
@@ -184,14 +177,14 @@ def onboarding_step2():
 #     return render_template('habit-break-browse.html')
 
 
-@app.route('/time', methods=['POST'])
+@app.route('/time', methods=['POST', 'GET'])
 def define_habit_time():
     """ collects habit time from user"""
 
     # # if 'break' in session, display diff text (re: replacement)
 
-    habit = request.form.get('habit')
-    session['habit'] = habit
+    habit_id = request.args.get('habit_id')
+    session['habit_id'] = habit_id
 
     return render_template("time.html")
 
@@ -202,15 +195,13 @@ def define_habit_time():
 
 # @app.route('/habit-browse')
 
-@app.route('/confirm', methods=['POST'])
+@app.route('/confirm', methods=['POST', 'GET'])
 def show_confirmation():
     """ confirm information about habit to user """
 
-    hour = int(request.form.get("hour"))
-    tz = request.form.get("tz")
-    # make sure the tz value from form is string that arrow needs.
-    # may consider using pytz.all_timezones
-
+    hour = int(request.args.get("hour"))
+    tz = request.args.get("tz")
+    
     # create an arrow object, replace hour and timezone.
     dt = arrow.now()
     time = dt.replace(hour=int('{}'.format(hour)), tzinfo='{}'.format(tz))
@@ -226,10 +217,10 @@ def show_confirmation():
     create_habit_id #from session
 
     name = session['name']
-    habit = session['habit'] # should be an id
+    habit = session['habit_id']
     mobile = session['mobile']
 
-    return render_template('confirm.html', name=name, mobile=mobile, habit=habit, hour=hour, tz=tz, utc_hour=utc_hour)
+    return render_template('confirm.html', name=name, mobile=mobile, habit_id=habit_ud, hour=hour, tz=tz, utc_hour=utc_hour)
 
 
 # @app.route('/habit-coach')

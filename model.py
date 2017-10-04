@@ -22,7 +22,7 @@ class User(db.Model):
         """ shows information about user """
 
         return "< user_id={} mobile={} name={}>".format(
-            self.user_id, self.mobile_id, self.name)
+            self.user_id, self.mobile, self.name)
 
 
 class UserProfile(db.Model):
