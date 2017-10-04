@@ -18,7 +18,7 @@ def load_users():
         user_id, name, mobile, is_partner = row.split(",")
    
         # create user
-        user = User(name=name, mobile=mobile, is_partner=False)
+        user = User(user_id=user_id, name=name, mobile=mobile, is_partner=False)
 
         # add to session
         db.session.add(user)

@@ -160,8 +160,11 @@ def onboarding_step2():
     name = request.form.get('name')
     session['name'] = name
 
+    habits = CreateHabit.query.all()
+    print habits
+
     # temporary ... 
-    return render_template('browse.html') 
+    return render_template('browse.html', habits=habits) 
     
 
 
@@ -259,12 +262,12 @@ def run_schedule():
 
 if __name__ == "__main__":
     # set the schedule for sending daily nudges:
-    schedule.every(1).minutes.do(send_daily_nudge)
+    #schedule.every(1).minutes.do(send_daily_nudge)
     
     # establish the thread:
-    t = Thread(target=run_schedule)
-    t.start()
-    print"Schedule is running. Start time: " + str(start_time)
+    #t = Thread(target=run_schedule)
+    #t.start()
+    #print"Schedule is running. Start time: " + str(start_time)
 
     # connect to db
     connect_to_db(app)

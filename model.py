@@ -47,7 +47,7 @@ class ProfileFactor(db.Model):
     __tablename__ = "profile_factors"
 
     profile_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    factor_description = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.String(50), nullable=False)
 
     def __repr__(self):
         """ shows information about profile factor """
@@ -70,7 +70,7 @@ class BreakHabit(db.Model):
         """ shows information about the habit """
 
         return "< BreakHabit: break_habit_id={} description={}>".format(
-            self.break_habit_id, self.break_habit_description)
+            self.break_habit_id, self.break_habit_title)
 
 
 class CreateHabit(db.Model):
@@ -87,7 +87,7 @@ class CreateHabit(db.Model):
         """ shows information about the habit """
 
         return "< CreateHabit: create_habit_id={} description={}>".format(
-            self.create_habit_id, self.create_habit_description)
+            self.create_habit_id, self.create_habit_title)
 
 
 class ReplaceHabit(db.Model):
@@ -188,4 +188,4 @@ if __name__ == "__main__":
     print "Connected to DB."
 
     # create tables
-    db.create_all()
+    # db.create_all()
