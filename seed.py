@@ -1,7 +1,7 @@
 """ Utility file to seed habot database with basic static data and test user data """
 
 from sqlalchemy import func
-from model import User, UserProfile, ProfileFactor, BreakHabit, CreateHabit, ReplaceHabit, UserHabit, Success, Coach
+from model import User, UserProfile, ProfileFactor, BreakHabit, CreateHabit, ReplaceHabit, UserHabit, Success, Streak, Coach
 from model import connect_to_db, db
 from server import app
 
@@ -64,13 +64,14 @@ def load_user_habits():
         row = row.rstrip()
         fields = [field if field != 'null' else None for field in row.split(",")]
         (habit_id, user_id, create_habit_id, break_habit_id,
-        current, tz, utc_time, utc_hour, partner_id) = fields
+        current, tz, utc_time, utc_hour, partner_id, longest_streak, 
+        total_days) = fields
 
         #create user-habit
         user_habit = UserHabit(habit_id=habit_id, user_id=user_id,
             create_habit_id=create_habit_id, break_habit_id=break_habit_id,
             current=current, tz=tz, utc_time=utc_time, utc_hour=utc_hour,
-            partner_id=partner_id)
+            partner_id=partner_id, longest_streak=longest_streak, total_days=total_days)
 
         #add user_habit
         db.session.add(user_habit)
@@ -97,7 +98,28 @@ def load_successes():
         #add success
         db.session.add(success)
 
-    #submit success
+    #submit successes
+    db.session.commit()
+
+def load_streaks():
+    """ load test user streaks data into database """
+
+    #delete any data that is in the table:
+    Streak.query.delete()
+
+    #open and parase streaks file
+    for row in open("data/streaks.csv"):
+        row = row.rstrip()
+        fields = [field if field !='NULL' else None for field in row.split(",")]
+        streak_id, habit_id, days, start, end = fields
+
+        #create streak
+        streak = Streak(streak_id=streak_id, habit_id=habit_id, days=days, start=start, end=end)
+
+        #add straek
+        db.session.add(streak)
+
+    #submit streaks
     db.session.commit()
 
 
@@ -138,6 +160,18 @@ def set_val_habit_id():
     db.session.execute(query, {'new_id': max_id + 1})
     db.session.commit()
 
+def set_val_streak_id():
+    """Set value for the next streak_id after seeding database with test users"""
+
+    # Get the Max success_id in the database
+    result = db.session.query(func.max(Streak.streak_id)).one()
+    max_id = int(result[0])
+
+    # Set the value for the next success_id to be max_id + 1
+    query = "SELECT setval('streaks_streak_id_seq', :new_id)"
+    db.session.execute(query, {'new_id': max_id + 1})
+    db.session.commit()
+
 
 if __name__ == "__main__":
     connect_to_db(app)
@@ -150,6 +184,7 @@ if __name__ == "__main__":
     load_create_habits()
     load_user_habits()
     load_successes()
+    load_streaks()
     set_val_user_id()
     set_val_success_id()
     set_val_habit_id()

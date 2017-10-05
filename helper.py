@@ -4,6 +4,7 @@ import time
 import arrow
 import random
 from flask import session
+from model import connect_to_db, db, User, CreateHabit, UserHabit, Success, Streak
 
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
 auth_token = os.environ["TWILIO_AUTH_TOKEN"]
@@ -75,33 +76,40 @@ def send_daily_nudge():
 def process_success(mobile, success_time):
         """ tracks user success in db """
 
+        # get user_id
         user = User.query.filter(User.mobile == mobile, User.is_partner == False).one()
         user_id = user.user_id
 
+        # get habit_id and tz
         user_habit = UserHabit.query.filter(UserHabit.user_id == user_id, UserHabit.current == True).one()
         habit_id = user_habit.habit_id
-        tz = q.tz
+        tz = user_habit.tz
 
-        # convert success_time object to ISO to store in db. 
+        # convert success_time object to string to store in db if necessary. 
         time = success_time.format('YYYY-MM-DD HH:mm:ss ZZ')
 
         # before we add success, make sure success doesn't already exist for that date (in local time)
-        q = Success.query.filter(Success.habit_id == habit_id).all()
+        previous_successes = Success.query.filter(Success.habit_id == habit_id).all()
 
-        if q:
+        if previous_successes:
+            print "there were previous successes!"
+            print previous_successes
             successes = []
-            for success in q:
+            for success in previous_successes:
                 successes.append(success.time)
 
             sorted_success_times = sorted(successes)
 
             # most recent success:
             last_success = arrow.get(sorted_success_times[-1])
+
             # convert to local time:
             last_success_local = last_success.to(tz)
+            print last_success_local
 
-            #convert this success to local time:
+            #convert current success to local time:
             this_success_local = success_time.to(tz)
+            print this_success_local
 
             #if they're on the same date, don't add data to db
             if last_success_local.date() == this_success_local.date():
@@ -109,39 +117,50 @@ def process_success(mobile, success_time):
                 # TODO: ask agent to say that's already been tracked in response JSON
 
             else: 
+
+                # add success to db
+                success = Success(habit_id=habit_id, mobile=mobile, time=time)
                 
-                # increment total days: 
+                # increment total days in user_habit: 
                 user_habit.total_days += 1
-                print "total number of days now equals: " + user_habit.total_days
+                print "total number of days now equals: "
+                print user_habit.total_days
                 
                 # check if date deltas = -1 (therefore an existing streak)
-                if (last_success_local.date() - this_success_local.date()).days == -1):
-                    
-                    # add success to db
-                    success = Success(habit_id=habit_id, mobile=mobile, time=time)
+                diff = last_success_local.date() - this_success_local.date()
+                
+                # if existing streak
+                if diff.days == -1:
 
-                    # query to find existing streak row
-                    existing_streak = Streak.query.filter(Streak.habit_id == habit_id, Streak.end == 'NULL').one()
+                    # query to find existing streak
+                    existing_streak = Streak.query.filter(Streak.habit_id == habit_id, Streak.end == None).one()
+                    print "existing streak found!"
                     
                     # update existing streak days
                     existing_streak.days += 1
-                    print "streak incremented! new streak: " + existing_streak.days
+                    db.session.add(existing_streak)
+                    print "streak incremented! new streak: "
+                    print existing_streak.days
 
-                    # if existing streak days longer than longest_streak, update longest_streak
+                    # updated longest_streak if new record
                     if existing_streak.days > user_habit.longest_streak:
                         
-                        # update user_habit object 
                         user_habit.longest_streak = existing_streak.days
                         print "new streak record recorded!"
+                # if no existing streak, create one
+                else:
+                    # create a new streak
+                    new_streak = Streak(habit_id=habit_id, days=1, start=time, end=None)
+                    db.session.add(new_streak)
 
-                    db.session.add(success, existing_streak, user_habit)
-                    db.session.commit()
+                db.session.add(success, user_habit)
+                db.session.commit()
 
-                    print "success tracked!"
+                print "success tracked!"
         else:
             # add a new success and new_streak to db 
             success = Success(habit_id=habit_id, mobile=mobile, time=time)
-            new_streak = Streak(habit_id=habit_id, days=1, start=time, end='NULL')
+            new_streak = Streak(habit_id=habit_id, days=1, start=time, end=None)
             db.session.add(success, new_streak)
             db.session.commit() 
             # consider adding something custom in response JSON ... congratulating on it being the first time, etc. 

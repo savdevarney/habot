@@ -8,7 +8,7 @@ import datetime
 import arrow
 from threading import Thread
 from helper import *
-from model import connect_to_db, db, User, CreateHabit, UserHabit, Success
+from model import connect_to_db, db, User, CreateHabit, UserHabit, Success, Streak
 
 app = Flask(__name__)
 app.secret_key = 'ABCSECRETDEF'
@@ -34,7 +34,8 @@ def track_success():
     # collect json from request, convert to dictionary:
     success_dict = request.get_json()
 
-    print "json received: " + success_dict
+    print "json received"
+    print success_dict
 
     # extract user mobile - ex: +18028253270
     mobile = success_dict['originalRequest']['data']['From']

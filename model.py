@@ -120,8 +120,8 @@ class UserHabit(db.Model):
     utc_time = db.Column(db.DateTime(timezone=True), nullable=False)
     utc_hour = db.Column(db.Integer, nullable=False)
     partner_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
-    longest_streak = db.Column(db.Integer, nullalbe=False, default=0) #
-    total_days = db.Column(db.Integer, nullable=False, default=0) #
+    longest_streak = db.Column(db.Integer, nullable=False, default=0)
+    total_days = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self):
         """ shows information about a user habit """
@@ -161,6 +161,14 @@ class Streak(db.Model):
     days = db.Column(db.Integer, nullable=False)
     start = db.Column(db.DateTime(timezone=True), nullable=False)
     end = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    def __repr__(self):
+        """ shows information about a streak"""
+
+        return "<streak: habit_id={}, days={}>".format(
+            self.habit_id, self.days)
+
+    habit = db.relationship('UserHabit', backref='streaks')
 
 
 class Coach(db.Model):
