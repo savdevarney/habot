@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>Excellent! {{ name }} You're confirmed!</h1>
-<p>your mobile: {{ mobile }} <p>
-<p>your habit: {{ habit }} </p>
+<h1>Excellent! {{ session['name'] }} You're confirmed!</h1>
+<p>your mobile: {{ session['mobile'] }} <p>
+<p>your habit_id: {{ user_habit.create_habit_id }} </p>
 <p>hour: {{ hour }} </p>
-<p> timezone: {{ tz }} </p>
+<p> timezone: {{ user_habit.tz }} </p>
 
 <p> for our purposes, your time is saved in UTC </p>
-<p> utc hour: {{ utc_hour }} 
+<p> utc hour: {{ user_habit.utc_hour }} 
 
 {% endblock %}

@@ -18,6 +18,7 @@ def send_confirmation_code(mobile):
         verification_code = generate_code()
         send_code(mobile, verification_code)
         session['verification_code'] = verification_code
+        print verification_code
         return verification_code
 
 
@@ -58,6 +59,16 @@ def send_daily_nudge():
 
     print "the scheduling script ran @ {}".format(time.time())
     print(message.sid)
+
+
+# helper functions for datetime
+
+    def get_local_hour(utc_time, tz):
+        """ returns the hour in the local time zone given a datetime string"""
+        arrow_utc = arrow.get(utc_time)
+        local_time = arrow_utc.to(tz)
+        local_hour = local_time.hour
+        return local_hour
 
     
 

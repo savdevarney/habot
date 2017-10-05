@@ -117,7 +117,6 @@ class UserHabit(db.Model):
     break_habit_id = db.Column(db.Integer, db.ForeignKey('break_habits.break_habit_id'), nullable=True)
     current = db.Column(db.Boolean, nullable=False)
     tz = db.Column(db.String(15), nullable=False)
-    time = db.Column(db.DateTime(timezone=True), nullable=False)
     utc_time = db.Column(db.DateTime(timezone=True), nullable=False)
     utc_hour = db.Column(db.Integer, nullable=False)
     partner_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
@@ -127,6 +126,8 @@ class UserHabit(db.Model):
 
         return "<habit: habit_id={}, user_id={}, current={}".format(
             self.habit_id, self.user_id, self.current)
+
+    user = db.relationship('User', foreign_keys="UserHabit.user_id", backref='habit')
 
 
 class Success(db.Model):
@@ -142,9 +143,10 @@ class Success(db.Model):
     def __repr__(self):
         """ shows information about a success"""
 
-        return "<success: habit_id={}, user_id={}, date_time={}".format(
-            self.habit_id, self.user_id, self.date_time)
+        return "<success: habit_id={}, time={}>".format(
+            self.habit_id, self.time)
 
+    habit = db.relationship('UserHabit', backref='successes')
 
 class Coach(db.Model):
     """ stores information about coach personalities """
