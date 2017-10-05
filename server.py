@@ -27,7 +27,7 @@ start_time = time.time()
 
 
 @app.route('/', methods=['POST'])
-def collect_successes():
+def track_successes():
     """ process requests from API.AI triggered on success events. Process & 
     store in success table """
 
@@ -38,18 +38,48 @@ def collect_successes():
     mobile = success_dict['originalRequest']['data']['From']
     
     # extract time (time API.ai agent tracks success) - ex: 2017-10-01T15:40:08.959Z
-    time = arrow.get(success_dict['timestamp'])
-    time = time.format('YYYY-MM-DD HH:mm:ss ZZ')
+    success_time = arrow.get(success_dict['timestamp'])
+    time = success_time.format('YYYY-MM-DD HH:mm:ss ZZ')
 
     q = User.query.filter(User.mobile == mobile, User.is_partner == False).one()
     user_id = q.user_id
 
     q = UserHabit.query.filter(UserHabit.user_id == user_id, UserHabit.current == True).one()
     habit_id = q.habit_id
+    tz = q.tz
 
-    success = Success(habit_id=habit_id, mobile=mobile, time=time)
-    db.session.add(success)
-    db.session.commit()
+    # before we add success, make sure success doesn't already exist for that date (in local time)
+    q = Success.query.filter(Success.habit_id == habit_id).all()
+
+    if q:
+        successes = []
+        for success in q:
+            successes.append(success.time)
+
+        sorted_success_times = sorted(successes)
+
+        last_success = arrow.get(sorted_success_times[0])
+        last_success_local = last_success.to(tz)
+
+        this_success_local = success_time.to(tz)
+
+        if last_success_local.date() == this_success_local.date():
+            pass
+            # TODO: don't add to data base ... ask agent to say that's already been tracked in response JSON
+        else: 
+            success = Success(habit_id=habit_id, mobile=mobile, time=time)
+            db.session.add(success)
+            db.session.commit()
+    else:
+        success = Success(habit_id=habit_id, mobile=mobile, time=time)
+        db.session.add(success)
+        db.session.commit() 
+
+
+
+
+    # if datetime.timedelta.days is > -2 ... flag as a streak 
+
    
     return 'JSON posted'
     
