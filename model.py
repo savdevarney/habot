@@ -120,6 +120,8 @@ class UserHabit(db.Model):
     utc_time = db.Column(db.DateTime(timezone=True), nullable=False)
     utc_hour = db.Column(db.Integer, nullable=False)
     partner_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
+    longest_streak = db.Column(db.Integer, nullalbe=False, default=0) #
+    total_days = db.Column(db.Integer, nullable=False, default=0) #
 
     def __repr__(self):
         """ shows information about a user habit """
@@ -147,6 +149,19 @@ class Success(db.Model):
             self.habit_id, self.time)
 
     habit = db.relationship('UserHabit', backref='successes')
+
+
+class Streak(db.Model):
+    """stores information about streaks"""
+
+    ___tablename___ = "streaks"
+
+    streak_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    habit_id = db.Column(db.Integer, db.ForeignKey('user_habits.habit_id'), nullable=False)
+    days = db.Column(db.Integer, nullable=False)
+    start = db.Column(db.DateTime(timezone=True), nullable=False)
+    end = db.Column(db.DateTime(timezone=True), nullable=True)
+
 
 class Coach(db.Model):
     """ stores information about coach personalities """

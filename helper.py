@@ -70,47 +70,81 @@ def send_daily_nudge():
         local_hour = local_time.hour
         return local_hour
 
-    
 
+# helper functions for tracking success
+def process_success(mobile, success_time):
+        """ tracks user success in db """
 
+        user = User.query.filter(User.mobile == mobile, User.is_partner == False).one()
+        user_id = user.user_id
 
-    #     message = client.messages.create(
-    #         messaging_service_sid=messaging_service_sid,
-    #         to="{}".format(,
-    #         from_="+14158539047",
-    #         body="It's that time, {}.  Did you {}?".format(name, habit)
-    #media_url=['https://demo.twilio.com/owl.png', 'https://demo.twilio.com/logo.png']
-    # )
+        user_habit = UserHabit.query.filter(UserHabit.user_id == user_id, UserHabit.current == True).one()
+        habit_id = user_habit.habit_id
+        tz = q.tz
 
-    # print(message.sid)
+        # convert success_time object to ISO to store in db. 
+        time = success_time.format('YYYY-MM-DD HH:mm:ss ZZ')
 
+        # before we add success, make sure success doesn't already exist for that date (in local time)
+        q = Success.query.filter(Success.habit_id == habit_id).all()
 
+        if q:
+            successes = []
+            for success in q:
+                successes.append(success.time)
 
-    ##########################
+            sorted_success_times = sorted(successes)
 
-    # attributes available on message objects ... likely ones I'll use: 
-    #     message.date_created
-    #     message.sid
-    #     message.to
-    #     message.from_
-    #     message.body
-    #     message.direction
-    #     message.status
-    #     message.error_message
+            # most recent success:
+            last_success = arrow.get(sorted_success_times[-1])
+            # convert to local time:
+            last_success_local = last_success.to(tz)
 
-    # also available, 
+            #convert this success to local time:
+            this_success_local = success_time.to(tz)
 
-    # message.num_segments
-    # message.subresource_uris
-    # message.date_updated
-    # message.price
-    # message.subresource_uri
-    # message.account_sid
-    # message.num_media
-    # message.messaging_service_sid
-    # message.date_sent <-- none for my message ... ?
-    # message.price_unit
-    # message.api_version
+            #if they're on the same date, don't add data to db
+            if last_success_local.date() == this_success_local.date():
+                print "success not tracked: success for this day already exists"
+                # TODO: ask agent to say that's already been tracked in response JSON
+
+            else: 
+                
+                # increment total days: 
+                user_habit.total_days += 1
+                print "total number of days now equals: " + user_habit.total_days
+                
+                # check if date deltas = -1 (therefore an existing streak)
+                if (last_success_local.date() - this_success_local.date()).days == -1):
+                    
+                    # add success to db
+                    success = Success(habit_id=habit_id, mobile=mobile, time=time)
+
+                    # query to find existing streak row
+                    existing_streak = Streak.query.filter(Streak.habit_id == habit_id, Streak.end == 'NULL').one()
+                    
+                    # update existing streak days
+                    existing_streak.days += 1
+                    print "streak incremented! new streak: " + existing_streak.days
+
+                    # if existing streak days longer than longest_streak, update longest_streak
+                    if existing_streak.days > user_habit.longest_streak:
+                        
+                        # update user_habit object 
+                        user_habit.longest_streak = existing_streak.days
+                        print "new streak record recorded!"
+
+                    db.session.add(success, existing_streak, user_habit)
+                    db.session.commit()
+
+                    print "success tracked!"
+        else:
+            # add a new success and new_streak to db 
+            success = Success(habit_id=habit_id, mobile=mobile, time=time)
+            new_streak = Streak(habit_id=habit_id, days=1, start=time, end='NULL')
+            db.session.add(success, new_streak)
+            db.session.commit() 
+            # consider adding something custom in response JSON ... congratulating on it being the first time, etc. 
 
 
 
