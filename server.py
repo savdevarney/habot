@@ -152,7 +152,15 @@ def show_dashboard():
 
     # gather data about current habit and display to user
 
-    return render_template('dashboard.html')
+    user_id = session['user_id']
+
+    user_habit = UserHabit.query.filter(UserHabit.user_id == user_id, UserHabit.current == True).one()
+
+    current_streak = Streak.query.filter(Streak.habit_id == user_habit.habit_id, Streak.end == None).one()
+
+    current_streak_days = current_streak.days
+
+    return render_template('dashboard.html', user_habit=user_habit, current_streak_days=current_streak_days)
 
     
 @app.route('/name')

@@ -2,6 +2,9 @@
 {% block content %}
 
 <h1>You've arrived at your dashboard!</h1>
-<h2>Info about your habit progress will be displayed here</h2>
+<p>Your current habit: {{ user_habit.habit_id }}</p>
+<p>current streak: {{ current_streak_days }} </p>
+<p>total days: {{ user_habit.total_days }} </p>
+<p>longest streak: {{ user_habit.longest_streak }} </p>
 
 {% endblock %}
