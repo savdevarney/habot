@@ -131,6 +131,8 @@ class UserHabit(db.Model):
 
     user = db.relationship('User', foreign_keys="UserHabit.user_id", backref='habit')
 
+    habit = db.relationship('CreateHabit', foreign_keys="UserHabit.create_habit_id", backref='userhabits')
+
 
 class Success(db.Model):
     """ tracks successes (successes in working toward habit) """
