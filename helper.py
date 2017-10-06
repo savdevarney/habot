@@ -73,6 +73,51 @@ def send_daily_nudge():
 
 
 # helper functions for tracking success
+
+def get_stats(habit_id):
+    """ given a habit_id produce stats for that habit
+    returns a dictionary of format:
+
+    {'total_days':6,
+        'current_streak':6, 
+        'longest_streak': 6} 
+
+        """
+    # consider making this a method of either User or HabitUser
+    # written with assumption I'll move to optimized db structure
+    # (Streak.start and Streak.end are foreign keys of Success.success_id)
+    
+    stats = {}
+
+    habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).one()
+    tz = habit.tz
+
+    successes = Success.query.filter(Success.habit_id == habit_id).all()
+
+    stats['total_days'] = len(successes)
+    ordered_successes = sorted(successes)
+    last_success = ordered_successes[-1]
+    last_success_id = last_success.success_id
+
+    streaks = Streak.query.filter(Streak.habit_id == habit_id).all()
+
+    longest_streak = 0
+
+    for streak in streaks:
+
+        streak_start = (arrow.get(streak.start.time)).to(tz)
+        streak_end = (arrow.get(streak.end.time)).to(tz)
+        streak_length = streak_start.date() - streak_end.date()
+        if streak_length > longest_streak:
+            longest_streak = streak_length
+            stats['longest_streak'] = streak_length
+        if streak.end == last_success_id:
+            stats['current_streak'] = streak_length
+
+    return stats
+    
+
+# a working monolith function that needs to be broken out!
 def process_success(mobile, success_time):
         """ tracks user success in db """
 
