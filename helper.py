@@ -115,7 +115,52 @@ def get_stats(habit_id):
             stats['current_streak'] = streak_length
 
     return stats
-    
+
+def is_streak(habit_id, success_time):
+    """ determines if a new success is part of an existing streak or not.
+    right now, expects an arrow datetime object from success route."""
+
+    user_habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).one()
+    tz = user_habit.tz
+
+    success_local = success_time.to(tz)
+
+    previous_successes = Success.query.filter(Success.habit_id == habit_id).all()
+
+    if previous_successes:
+        print "there were previous successes!"
+        successes = []
+        for success in previous_successes:
+            successes.append(success.time)
+
+        sorted_success_times = sorted(successes)
+
+        # most recent success:
+        last_success = arrow.get(sorted_success_times[-1])
+        last_success_local = last_success.to(tz)
+
+
+        # check if date deltas = -1 (therefore an existing streak)
+        diff = last_success_local.date() - success_local.date()
+                
+        # if existing streak
+        if diff.days == -1:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+def update_streak():
+    """ if is_streak returns True, update streak """
+
+    pass
+
+def create_streak():
+    """ if is_streak returns False, create streak """
+
+    pass
+
 
 # a working monolith function that needs to be broken out!
 def process_success(mobile, success_time):
