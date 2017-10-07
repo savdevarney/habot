@@ -122,26 +122,34 @@ def get_stats(habit_id):
     # iterate through all streaks to find longest_streak and current_streak (if day qualifies)
     
     streaks = Streak.query.filter(Streak.habit_id == habit_id).all()
+    
     longest_streak = 0
+    
     for streak in streaks:
 
         # calculate lengths of all streaks
         streak_start = (arrow.get(streak.start_success.time)).to(tz)
         streak_end = (arrow.get(streak.end_success.time)).to(tz)
-        streak_length = streak_start.date() - streak_end.date()
+        streak_length = -((streak_start.date() - streak_end.date()).days)
         
         # find longest streak
         if streak_length > longest_streak:
             longest_streak = streak_length
             stats['longest_streak'] = streak_length
         
-        if streak.end_success == last_success_id:
+        # find the last streak
+        if streak.end_id == last_success_id:
+            # if end of last streak == today or yesterday:
             if dates_same_or_consecutive(last_success_time, current_time, tz):
                 stats['current_streak'] = streak_length
                 stats['potential_streak'] = streak_length
-
+                # if end of last streak == yesterday:
                 if dates_consecutive(last_success_time, current_time, tz):
                     stats['potential_streak'] = streak_length + 1
+            # if end of last streak != today or yesterday: 
+            else:
+                stats['current_streak'] = 0
+                stats['potential_streak'] = 0
 
     return stats
 
@@ -237,6 +245,9 @@ def streak_update(habit_id, streak_id, success_id):
 def dates_same(first_datetime, second_datetime, tz):
     """ checks if two date are the same.  Returns True if so and False if not """
 
+    first_datetime = arrow.get(first_datetime)
+    second_datetime = arrow.get(second_datetime)
+
     if (first_datetime.to(tz)).date() == (second_datetime.to(tz)).date():
         return True
     else:
@@ -245,7 +256,11 @@ def dates_same(first_datetime, second_datetime, tz):
 def dates_consecutive(first_datetime, second_datetime, tz):
     """ checks if two date are consecutive.  Returns True if so and False if not """
 
+    first_datetime = arrow.get(first_datetime)
+    second_datetime = arrow.get(second_datetime)
+
     diff = (first_datetime.to(tz)).date() - (second_datetime.to(tz)).date()
+    
     if diff.days == -1:
         return True
     else:
@@ -254,8 +269,11 @@ def dates_consecutive(first_datetime, second_datetime, tz):
 def dates_same_or_consecutive(first_datetime, second_datetime, tz):
     """ checks if two dates are the same or consecutive"""
 
-    if (dates_same(last_success_time, current_time, tz) 
-        or dates_consecutive(last_success_time, current_time, tz)):
+    first_datetime = arrow.get(first_datetime)
+    second_datetime = arrow.get(second_datetime)
+
+    if (dates_same(first_datetime, second_datetime, tz) 
+        or dates_consecutive(first_datetime, second_datetime, tz)):
         return True
     else:
         return False

@@ -96,7 +96,7 @@ def verify_user():
     mobile = request.args.get('mobile')
     country_calling_code = request.args.get('country_calling_code')
     session['country_calling_code'] = country_calling_code
-    mobile = str(country_calling_code) + str(mobile)
+    mobile = "+" + str(country_calling_code) + str(mobile)
     print mobile
     session['mobile'] = mobile
 
