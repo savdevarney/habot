@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1> what time zone are you in? </h1>
+
+
+{% for timezone in timezones %}
+<form action='/signup' method='GET'>
+    <input type="hidden" name="tz" value="{{ timezone }}">
+    <input type='submit', value="{{ timezone }}">
+</form>
+{% endfor %}
+
+{% endblock %}

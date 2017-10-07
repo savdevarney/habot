@@ -6,6 +6,8 @@ import schedule
 import time
 import datetime
 import arrow
+import pytz
+from pytz import common_timezones
 from threading import Thread
 from helper import *
 from model import connect_to_db, db, User, CreateHabit, UserHabit, Success, Streak
@@ -92,8 +94,11 @@ def verify_user():
     """ ask user for verification code that was sent via sms """
 
     mobile = request.args.get('mobile')
+    country_calling_code = request.args.get('country_calling_code')
+    session['country_calling_code'] = country_calling_code
+    mobile = str(country_calling_code) + str(mobile)
     session['mobile'] = mobile
-    
+
     send_confirmation_code(mobile)
 
     return render_template('verification.html')
@@ -113,14 +118,15 @@ def log_in_user():
     if code == session['verification_code']:
         
         # query if user is in the db:
-        q = User.query.filter(User.mobile == mobile, User.is_partner == False).first()
+        user = User.query.filter(User.mobile == mobile).one()
         
         # if user in db, redirect to /dashboard
-        if q:
-            session['user_id'] = q.user_id
+        if user:
+            session['user_id'] = user.user_id
             return redirect('/dashboard')
         
         else:
+            #redirect to onboarding flow
             return redirect('/name')
     
     # if incorrect code:
@@ -134,15 +140,18 @@ def log_in_user():
 def create_user():
     """creates user"""
 
-    name = request.args.get('name')
-    session['name'] = name
+    tz = request.args.get(tz)
+    session['tz'] = tz
     mobile = session['mobile']
+    name = session['name']
 
-    name = name
-    user = User(name=name, mobile=mobile, is_partner=False)
+    # create user and add user_id to session
+    user = User(name=name, mobile=mobile, tz=tz)
     db.session.add(user)
     db.session.commit()
+    uesr_id = User.query.filter(mobile=mobile).one()
     session['user_id'] = user.user_id
+    
     return redirect('/habit')
  
 
@@ -156,19 +165,38 @@ def show_dashboard():
 
     user_habit = UserHabit.query.filter(UserHabit.user_id == user_id, UserHabit.current == True).one()
 
-    current_streak = Streak.query.filter(Streak.habit_id == user_habit.habit_id, Streak.end == None).one()
+    stats = get_stats(user_habit.habit_id)
 
-    current_streak_days = current_streak.days
-
-    return render_template('dashboard.html', user_habit=user_habit, current_streak_days=current_streak_days)
+    return render_template('dashboard.html', user_habit=user_habit, stats=stats)
 
     
 @app.route('/name')
-def onboarding_step1():
+def choose_name():
     """ onboarding, step 1 - identify name """
 
     return render_template('name.html')
     # form to collect name --> send user to factors, but for now --> /habit
+
+@app.route('/timezone', methods=['GET'])
+def choose_timezone():
+    """ onboarding, step 2 - identify timezone """
+
+    name = request.args.get('name')
+    session['name'] = name
+    country_calling_code = session['country_calling_code']
+
+
+    #create a list of timezones for a given country
+    country_code = 'US'
+    all_country_timezones = pytz.country_timezones
+    country_timezones = all_country_timezones[country_code] # a list
+    timezones = [] # a list to collect only common times for that country
+    for zone in country_timezones:
+        if zone in common_timezones:
+            timezones.append(zone)
+
+
+    return render_template('timezone.html', timezones=timezones)
 
 # @app.route('/factors')
 # def onboarding():
@@ -233,32 +261,30 @@ def show_confirmation():
     """ confirm information about habit to user """
 
     hour = int(request.args.get("hour"))
-    tz = request.args.get("tz")
+    user_id = session['user_id']
+    user = User.query.filter(User.user_id == user_id).one()
+    tz = user.tz
 
     # create an arrow object, replace hour and timezone.
     t = arrow.now()
     time = t.replace(hour=int('{}'.format(hour)), tzinfo='{}'.format(tz))
     
-    # convert to UTC and extract hour to store seperately
+    # convert to UTC
     utc_time = time.to('UTC')
-    utc_hour = utc_time.hour # an integer
     
     # format to store in db
     utc_time = utc_time.format('YYYY-MM-DD HH:mm:ss ZZ')
-    time = time.format('YYYY-MM-DD HH:mm:ss ZZ')
    
     create_habit_id = session['habit_id']
+    current = True
     if 'break_habit_id' not in session:
         break_habit_id = None
     else:
         break_habit_id = session['break_habit_id']
-    current = True
     if 'partner_id' not in session:
         partner_id = None
     else:
         partner_id = session['partner_id']
-
-    user_id = session['user_id']
 
     # look up any other habits user has and set current flag to false
     previous_user_habits = UserHabit.query.filter(User.user_id == user_id).all()
@@ -270,8 +296,8 @@ def show_confirmation():
 
     # store to user-habits table
     user_habit = UserHabit(user_id=user_id, create_habit_id=create_habit_id, 
-        break_habit_id=break_habit_id, current=current, tz=tz,
-        utc_time=utc_time, utc_hour=utc_hour, partner_id=partner_id)
+        break_habit_id=break_habit_id, current=current,
+        utc_time=utc_time, partner_id=partner_id)
 
     db.session.add(user_habit)
     

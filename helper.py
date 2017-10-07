@@ -42,10 +42,10 @@ def send_code(mobile, verification_code):
 def send_daily_nudge():
     """ send reminders sms messages to every user that should receive at that hour """
 
-    utc_now = arrow.utcnow()
-    utc_hour = utc_now.hour
+    utc_hour = get_utc_hour()
 
     habits = UserHabit.query.filter(UserHabit.time.hour == utc_hour).all()
+    #TODO - make sure ^ works
 
     for habit in habits:
         habit = habit.habit.create_habit_title
@@ -64,16 +64,17 @@ def send_daily_nudge():
 
 # helper functions for datetime
 
-def get_local_hour(time, tz):
-""" returns the hour in the local time zone given a datetime string in utc"""
+def get_local_hour(tz):
+""" returns the curernt local hour in a time zone"""
+    
     time_utc = arrow.utcnow()
-    local_time = arrow_utc.to(tz)
-    local_hour = local_time.hour
+    time_local = time_utc.to(tz)
+    local_hour = time_local.hour
     return local_hour
 
 
-def get_utc_hour(time):
-    """ returns the utc hour of a datetime string in utc """
+def get_utc_hour():
+    """ returns the utc hour of the current time"""
 
     time_utc = arrow.utcnow()
     utc_hour = time_utc.hour
@@ -167,21 +168,27 @@ def process_success(mobile, time):
             # create success and create sterak
             success_id = add_success_get_id(habit_id, mobile, time)
             streak_update(habit_id, streak_id, success_id)
+            print "new streak added"
         else:
             # create success and update streak
             success_id = add_success_get_id(habit_id, mobile, time)
             streak_update(habit_id, streak_id, success_id)
+            print "existing streak updated"
+
+        print "user success processed"
     
         
-def add_success_get_id(habit_id, mobile, time):
+def add_success_get_id(habit_id, mobile, success_time):
 
+    time = success_time.format('YYYY-MM-DD HH:mm:ss ZZ')
     success = Success(habit_id=habit_id, mobile=mobile, time=time)
     db.session.add(success)
     db.session.commit
-    # TO DO: is it possible to immediately return the success_id after insertion? 
-    return success_id
+    last_success = find_last_success(habit_id)
+    return last_success.success_id
 
 def find_last_success(habit_id):
+    # can also do this by user_id ... order_by success_id
 
     last_success = Success.query.filter(Success.habit_id == habit_id).order_by(Success.time.desc()).first()
 
@@ -190,12 +197,10 @@ def find_last_success(habit_id):
 
 def get_streak_id(habit_id, success_time):
     """ determines if a new success is part of an existing streak or not.
-    if not, returns False.  If streak is True, returns streak_id of current streak """
+    returns streak_id or none if success is not part of a streak """
 
     user_habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).one()
     tz = user_habit.user.tz
-
-    success_time = arrow.get(success_time)
 
     last_success = find_last_success(habit_id)
 
@@ -203,13 +208,10 @@ def get_streak_id(habit_id, success_time):
         last_sucess_id = last_success.success_id
         last_success_time = arrow.get(last_success.time)
         last_success_local = last_success_time.to(tz)
-
-        # TO DO ... use are_dates_consecutive function
-        # TO DO ... user update_or_create_streak function
                 
         # if existing streak
         if dates_consecutive(last_success_time, success_time, tz)
-            streak = Streak.query.filter(Streak.end == last_success_id).one()
+            streak = Streak.query.filter(Streak.end_id == last_success_id).one()
             return streak.streak_id
         else:
             return None
@@ -221,7 +223,7 @@ def streak_update(habit_id, streak_id, success_id):
 
     if streak_id is None:
         # create new streak
-        streak = Streak(habit_id=habit_id, start_success=success_id, end_success=success_id)
+        streak = Streak(habit_id=habit_id, start_id=success_id, end_id=success_id)
     
     else:
         # update existing streak
@@ -252,10 +254,10 @@ def dates_consecutive(first_datetime, second_datetime, tz):
 def dates_same_or_consecutive(first_datetime, second_datetime, tz):
     """ checks if two dates are the same or consecutive"""
 
-    if (dates_same(last_success_time, current_time, tz) 
+    if (dates_same(last_success_time, current_time, tz)
         or dates_consecutive(last_success_time, current_time, tz):
         return True
-    else: 
+    else:
         return False
 
 
@@ -324,7 +326,7 @@ def process_success(mobile, success_time):
                 if diff.days == -1:
 
                     # query to find existing streak
-                    existing_streak = Streak.query.filter(Streak.habit_id == habit_id, Streak.end == None).one()
+                    existing_streak = Streak.query.filter(Streak.habit_id == habit_id, Streak.end_id == None).one()
                     print "existing streak found!"
                     
                     # update existing streak days
@@ -351,7 +353,7 @@ def process_success(mobile, success_time):
         else:
             # add a new success and new_streak to db 
             success = Success(habit_id=habit_id, mobile=mobile, time=time)
-            new_streak = Streak(habit_id=habit_id, days=1, start=time, end=None)
+            new_streak = Streak(habit_id=habit_id, days=1, start=time, end_id=None)
             db.session.add(success, new_streak)
             db.session.commit() 
             # consider adding something custom in response JSON ... congratulating on it being the first time, etc. 

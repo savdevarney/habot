@@ -16,7 +16,7 @@ class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(25), nullable=False)
     mobile = db.Column(db.String(15), nullable=False)
-    is_partner = db.Column(db.Boolean, nullable=False)
+    tz = db.Column(db.String(15), nullable=False)
 
     def __repr__(self):
         """ shows information about user """
@@ -116,12 +116,8 @@ class UserHabit(db.Model):
     create_habit_id = db.Column(db.Integer, db.ForeignKey('create_habits.create_habit_id'), nullable=False)
     break_habit_id = db.Column(db.Integer, db.ForeignKey('break_habits.break_habit_id'), nullable=True)
     current = db.Column(db.Boolean, nullable=False)
-    tz = db.Column(db.String(15), nullable=False)
     utc_time = db.Column(db.DateTime(timezone=True), nullable=False)
-    utc_hour = db.Column(db.Integer, nullable=False)
     partner_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
-    longest_streak = db.Column(db.Integer, nullable=False, default=0)
-    total_days = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self):
         """ shows information about a user habit """
@@ -161,8 +157,8 @@ class Streak(db.Model):
     streak_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     habit_id = db.Column(db.Integer, db.ForeignKey('user_habits.habit_id'), nullable=False)
     days = db.Column(db.Integer, nullable=False)
-    start = db.Column(db.DateTime(timezone=True), nullable=False)
-    end = db.Column(db.DateTime(timezone=True), nullable=True)
+    start_id = db.Column(db.Integer, db.ForeignKey('successes.success_id'), nullable=False)
+    end_id = db.Column(db.Integer, db.ForeignKey('successes.success_id'), nullable=False)
 
     def __repr__(self):
         """ shows information about a streak"""
@@ -171,6 +167,25 @@ class Streak(db.Model):
             self.habit_id, self.days)
 
     habit = db.relationship('UserHabit', backref='streaks')
+    start_success = db.relationship('Success', foreign_keys=[start_id], backref='streak_start')
+    end_success = db.relationship('Success', foreign_keys=[end_id], backref='streak_end')
+
+
+class Partner(db.Model):
+    """ stores information partners for a given user habit """
+
+    __tablename__ = "partners"
+
+    partner_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String, nullable=False)
+    mobile = db.Column(db.String(15), nullable=False)
+    subscribed = db.Column(db.Boolean, nullable=False)
+
+    def __repr__(self):
+        """ shows information about a partner"""
+
+        return "<partner: partner_id={}, mobile={}>".format(
+            self.partner_id, self.mobile)
 
 
 class Coach(db.Model):
@@ -185,7 +200,7 @@ class Coach(db.Model):
     def __repr__(self):
         """ shows information about a coach"""
 
-        return "<coach: coach_id={}, description={}".format(
+        return "<coach: coach_id={}, description={}>".format(
             self.coach_id, self.coach_description)
 
 

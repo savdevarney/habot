@@ -15,10 +15,10 @@ def load_users():
     #open and parse users.csv file
     for row in open("data/users.csv"):
         row = row.rstrip()
-        user_id, name, mobile, is_partner = row.split(",")
+        user_id, name, mobile, tz = row.split(",")
    
         # create user
-        user = User(user_id=user_id, name=name, mobile=mobile, is_partner=False)
+        user = User(user_id=user_id, name=name, mobile=mobile, tz=tz)
 
         # add to session
         db.session.add(user)
@@ -64,14 +64,12 @@ def load_user_habits():
         row = row.rstrip()
         fields = [field if field != 'null' else None for field in row.split(",")]
         (habit_id, user_id, create_habit_id, break_habit_id,
-        current, tz, utc_time, utc_hour, partner_id, longest_streak, 
-        total_days) = fields
+        current, utc_time, partner_id) = fields
 
         #create user-habit
         user_habit = UserHabit(habit_id=habit_id, user_id=user_id,
             create_habit_id=create_habit_id, break_habit_id=break_habit_id,
-            current=current, tz=tz, utc_time=utc_time, utc_hour=utc_hour,
-            partner_id=partner_id, longest_streak=longest_streak, total_days=total_days)
+            current=current, utc_time=utc_time, partner_id=partner_id)
 
         #add user_habit
         db.session.add(user_habit)
@@ -111,10 +109,10 @@ def load_streaks():
     for row in open("data/streaks.csv"):
         row = row.rstrip()
         fields = [field if field !='NULL' else None for field in row.split(",")]
-        streak_id, habit_id, days, start, end = fields
+        streak_id, habit_id, days, start_id, end_id = fields
 
         #create streak
-        streak = Streak(streak_id=streak_id, habit_id=habit_id, days=days, start=start, end=end)
+        streak = Streak(streak_id=streak_id, habit_id=habit_id, days=days, start_id=start_id, end_id=end_id)
 
         #add straek
         db.session.add(streak)
