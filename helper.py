@@ -65,7 +65,7 @@ def send_daily_nudge():
 # helper functions for datetime
 
 def get_local_hour(tz):
-""" returns the curernt local hour in a time zone"""
+    """ returns the curernt local hour in a time zone"""
     
     time_utc = arrow.utcnow()
     time_local = time_utc.to(tz)
@@ -157,7 +157,7 @@ def process_success(mobile, time):
 
     last_time = (find_last_success(habit_id)).time
 
-    if dates_same(time, last_time, tz)
+    if dates_same(time, last_time, tz):
         print "user has already succeeded on this day"
 
     else:
@@ -210,7 +210,7 @@ def get_streak_id(habit_id, success_time):
         last_success_local = last_success_time.to(tz)
                 
         # if existing streak
-        if dates_consecutive(last_success_time, success_time, tz)
+        if dates_consecutive(last_success_time, success_time, tz):
             streak = Streak.query.filter(Streak.end_id == last_success_id).one()
             return streak.streak_id
         else:
@@ -254,14 +254,11 @@ def dates_consecutive(first_datetime, second_datetime, tz):
 def dates_same_or_consecutive(first_datetime, second_datetime, tz):
     """ checks if two dates are the same or consecutive"""
 
-    if (dates_same(last_success_time, current_time, tz)
-        or dates_consecutive(last_success_time, current_time, tz):
+    if (dates_same(last_success_time, current_time, tz) 
+        or dates_consecutive(last_success_time, current_time, tz)):
         return True
     else:
         return False
-
-
-
 
 
 

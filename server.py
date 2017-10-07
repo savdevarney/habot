@@ -97,7 +97,9 @@ def verify_user():
     country_calling_code = request.args.get('country_calling_code')
     session['country_calling_code'] = country_calling_code
     mobile = str(country_calling_code) + str(mobile)
+    print mobile
     session['mobile'] = mobile
+
 
     send_confirmation_code(mobile)
 
@@ -113,6 +115,7 @@ def log_in_user():
     # verify correct code with Twilio
     session['code'] = code
     mobile = session['mobile']
+    print mobile 
 
     # if correct code:
     if code == session['verification_code']:
