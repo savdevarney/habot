@@ -121,7 +121,7 @@ def log_in_user():
     if code == session['verification_code']:
         
         # query if user is in the db:
-        user = User.query.filter(User.mobile == mobile).one()
+        user = User.query.filter(User.mobile == mobile).first()
         
         # if user in db, redirect to /dashboard
         if user:
@@ -143,7 +143,7 @@ def log_in_user():
 def create_user():
     """creates user"""
 
-    tz = request.args.get(tz)
+    tz = request.args.get('tz')
     session['tz'] = tz
     mobile = session['mobile']
     name = session['name']
@@ -152,7 +152,7 @@ def create_user():
     user = User(name=name, mobile=mobile, tz=tz)
     db.session.add(user)
     db.session.commit()
-    uesr_id = User.query.filter(mobile=mobile).one()
+    user = User.query.filter(User.mobile == mobile).one()
     session['user_id'] = user.user_id
     
     return redirect('/habit')

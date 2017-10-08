@@ -16,7 +16,7 @@ class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(25), nullable=False)
     mobile = db.Column(db.String(15), nullable=False)
-    tz = db.Column(db.String(15), nullable=False)
+    tz = db.Column(db.String(25), nullable=False)
 
     def __repr__(self):
         """ shows information about user """
@@ -125,7 +125,7 @@ class UserHabit(db.Model):
         return "<habit: habit_id={}, user_id={}, current={}".format(
             self.habit_id, self.user_id, self.current)
 
-    user = db.relationship('User', foreign_keys="UserHabit.user_id", backref='habit')
+    user = db.relationship('User', foreign_keys="UserHabit.user_id", backref='userhabits')
 
     habit = db.relationship('CreateHabit', foreign_keys="UserHabit.create_habit_id", backref='userhabits')
 
