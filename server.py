@@ -7,6 +7,8 @@ import time
 import datetime
 import arrow
 import pytz
+import phonenumbers
+import pycountry
 from pytz import common_timezones
 from threading import Thread
 from helper import *
@@ -86,7 +88,13 @@ def track_success():
 def show_homepage():
     """Show homepage."""
 
-    return render_template('homepage.html')
+    # create a dictionary of country names and country codes:
+    country_info = {}
+    for country in pycountry.countries:
+        country_info[country.name] = country.alpha_2
+
+
+    return render_template('homepage.html', country_info=country_info)
 
 
 @app.route('/verify', methods=['GET', 'POST'])
@@ -94,9 +102,11 @@ def verify_user():
     """ ask user for verification code that was sent via sms """
 
     mobile = request.args.get('mobile')
-    country_calling_code = request.args.get('country_calling_code')
-    session['country_calling_code'] = country_calling_code
-    mobile = "+" + str(country_calling_code) + str(mobile)
+    country_code = request.args.get('country_code')
+    print country_code
+    session['country_code'] = country_code
+    mobile_object = phonenumbers.parse(mobile, country_code)
+    mobile = phonenumbers.format_number(mobile_object, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
     print mobile
     session['mobile'] = mobile
 

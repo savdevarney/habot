@@ -6,7 +6,11 @@
 <h3> Let's get started! What's your phone number? </h3>
 
 <form action='/verify', method='GET'>
-    <input type='text' name='country_calling_code'>
+    <select name="country_code">
+        { % for key, value in country_info.items() %}
+        <option value="{{ key }}">{{ value }}</option>
+        { % endfor % }
+    </select>
     <input type='text' name='mobile'>
     <input type='submit' value='Lets do this!'>
 </form>
