@@ -10,4 +10,13 @@
 <p>longest streak: {{ stats["longest_streak"] }} </p>
 <p>7 days streaks: {{ stats["week_streaks"] }}
 
+<p> your last ratings: </p>
+<ul>
+{% for factor, rating in sorted_last_ratings %}
+
+<li> {{ factor }}: {{ rating }}
+
+{% endfor %}
+</ul>
+
 {% endblock %}

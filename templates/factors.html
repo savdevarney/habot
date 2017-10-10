@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1> tell us how you're doing right now </h1>
+
+<form action='/signup' method='GET'>
+    {% for factor in factors %}
+    <h3>{{ factor.title }}</h3>
+    <p>{{ factor.description }}</p>
+    <select name="{{ factor.factor_id }}">
+        <option value="0">Very awesome</option>
+        <option value="1">Pretty ok</option>
+        <option value="2">Not great</option>
+    </select>
+    <br>
+    {% endfor %}
+    <input type="submit", value="that sounds about right at the moment">
+</form>
+
+
+{% endblock %}

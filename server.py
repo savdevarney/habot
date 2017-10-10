@@ -8,7 +8,9 @@ import datetime
 import arrow
 from threading import Thread
 from helper import *
-from model import connect_to_db, db, User, CreateHabit, UserHabit, Success, Streak
+from model import (connect_to_db, db, User, CreateHabit, UserHabit, Success,
+    Streak, Partner, Coach, UserProfile, FactorRating, Factor,
+    FactorHabitRating)
 
 app = Flask(__name__)
 app.secret_key = 'ABCSECRETDEF'
@@ -108,7 +110,7 @@ def log_in_user():
         user = User.query.filter(User.mobile == mobile).first()
         
         # if user in db, redirect to /dashboard
-        if user:
+        if user != None:
             session['user_id'] = user.user_id
             return redirect('/dashboard')
         
@@ -121,23 +123,35 @@ def log_in_user():
         flash("The code you entered was incorrect. Please enter the new code sent to you")
         return redirect('/verify?mobile={}'.format(mobile))
 
-    # Later TODO: determine if they've completed onboarding, etc. 
+    # Later TODO: determine if they've completed onboarding, etc.
 
 @app.route('/signup', methods=['POST', 'GET'])
 def create_user():
     """creates user"""
 
-    tz = request.args.get('tz')
-    session['tz'] = tz
+    tz = session['tz']
     mobile = session['mobile']
     name = session['name']
 
     # create user and add user_id to session
-    user = User(name=name, mobile=mobile, tz=tz)
-    db.session.add(user)
-    db.session.commit()
-    user = User.query.filter(User.mobile == mobile).one()
-    session['user_id'] = user.user_id
+    user_id = create_user_return_id(name, mobile, tz)
+
+    #set user_id in session
+    session['user_id'] = user_id
+
+    #set rating_date & create a UserFactorProfile
+    rating_date = (arrow.utcnow()).format('YYYY-MM-DD HH:mm:ss ZZ')
+    profile_id = create_profile_return_id(user_id, rating_date)
+    
+    #create dictionary of results from factor rating to pass into create_factor_rating
+    factors = Factor.query.all()
+    factor_ratings = {}
+    for factor in factors:
+        score = request.args.get('{}'.format(factor.factor_id))
+        factor_ratings[factor.factor_id] = int(score)
+
+    create_factor_ratings(profile_id, factor_ratings)
+
     
     return redirect('/habit')
  
@@ -150,11 +164,13 @@ def show_dashboard():
 
     user_id = session['user_id']
 
-    user_habit = UserHabit.query.filter(UserHabit.user_id == user_id, UserHabit.current == True).one()
+    user_habit = UserHabit.query.filter(UserHabit.user_id == user_id, UserHabit.current == True).first()
 
     stats = get_stats(user_habit.habit_id)
 
-    return render_template('dashboard.html', user_habit=user_habit, stats=stats)
+    sorted_last_ratings = get_last_factor_profile(user_id)
+
+    return render_template('dashboard.html', user_habit=user_habit, stats=stats, sorted_last_ratings=sorted_last_ratings)
 
     
 @app.route('/name')
@@ -178,12 +194,16 @@ def choose_timezone():
     return render_template('timezone.html', timezones=timezones)
 
 
-# @app.route('/factors')
-# def onboarding():
-#     """ onboarding, step 2 - identify factors """
+@app.route('/factors')
+def rate_factors():
+    """ onboarding, step 3 - identify factors """
 
-#     return render_template('factors.html') 
-#     # displays list of profile-factors.  User selects and submits.
+    tz = request.args.get('tz')
+    session['tz'] = tz
+
+    factors = Factor.query.all()
+
+    return render_template('factors.html', factors=factors) 
 
 
 @app.route('/habit')

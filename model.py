@@ -25,37 +25,6 @@ class User(db.Model):
             self.user_id, self.mobile, self.name)
 
 
-class UserProfile(db.Model):
-    """profile of user factors selected at onboarding"""
-
-    __tablename__ = "user_profiles"
-
-    user_profile_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    profile_id = db.Column(db.Integer, db.ForeignKey('profile_factors.profile_id'), nullable=False)
-
-    def __repr__(self):
-        """ shows information about association """
-
-        return "< association: user_id={} profile_id={}>".format(
-            self.user_id, self.profile_id)
-
-
-class ProfileFactor(db.Model):
-    """ profile attributes a user selects as true during onboarding """
-
-    __tablename__ = "profile_factors"
-
-    profile_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    description = db.Column(db.String(50), nullable=False)
-
-    def __repr__(self):
-        """ shows information about profile factor """
-
-        return "< factor: profile_id={} description={}>".format(
-            self.profile_id, self.factor_description)
-
-
 class BreakHabit(db.Model):
     """ habits a user can select to break """
 
@@ -69,7 +38,7 @@ class BreakHabit(db.Model):
     def __repr__(self):
         """ shows information about the habit """
 
-        return "< BreakHabit: break_habit_id={} description={}>".format(
+        return "<BreakHabit: break_habit_id={} description={}>".format(
             self.break_habit_id, self.break_habit_title)
 
 
@@ -86,7 +55,7 @@ class CreateHabit(db.Model):
     def __repr__(self):
         """ shows information about the habit """
 
-        return "< CreateHabit: create_habit_id={} description={}>".format(
+        return "<CreateHabit: create_habit_id={} description={}>".format(
             self.create_habit_id, self.create_habit_title)
 
 
@@ -96,13 +65,13 @@ class ReplaceHabit(db.Model):
     __tablename__ = "replace_habits"
 
     association_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    break_habit_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    create_habit_id = db.Column(db.Integer, db.ForeignKey('profile_factors.profile_id'), nullable=False)
+    break_habit_id = db.Column(db.Integer, db.ForeignKey('break_habits.break_habit_id'), nullable=False)
+    create_habit_id = db.Column(db.Integer, db.ForeignKey('create_habits.create_habit_id'), nullable=False)
 
     def __repr__(self):
         """ shows information about association """
 
-        return "< association: break_habit_id={} create_habit_id={}>".format(
+        return "<association: break_habit_id={} create_habit_id={}>".format(
             self.break_habit_id, self.create_habit_id)
 
 
@@ -205,20 +174,20 @@ class Coach(db.Model):
             self.coach_id, self.coach_description)
 
 
-class UserFactorProfile(db.Model):
+class UserProfile(db.Model):
     """ stores high level information about a user's factor results """
 
-    __tablename__ = "user_factor_profiles"
+    __tablename__ = "user_profiles"
 
-    user_factor_profile_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    profile_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     rating_date = db.Column(db.DateTime(timezone=True), nullable=False)
 
     def __repr__(self):
-        """ shows information about a UserFactorProfile"""
+        """ shows information about a UserProfile"""
 
-        return "<UserFactorProfile: id={}, date={}>".format(
-            self.user_factor_profile_id, self.rating_date)
+        return "<UserProfile: id={}, date={}>".format(
+            self.profile_id, self.rating_date)
 
 
 class FactorRating(db.Model):
@@ -227,12 +196,12 @@ class FactorRating(db.Model):
     __tablename__ = "factor_ratings"
 
     factor_rating_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_factor_profile_id = db.Column(db.Integer, db.ForeignKey('user_factor_profiles.user_factor_profile_id'), nullable=False)
+    profile_id = db.Column(db.Integer, db.ForeignKey('user_profiles.profile_id'), nullable=False)
     factor_id = db.Column(db.Integer, db.ForeignKey('factors.factor_id'), nullable=False)
     score = db.Column(db.Integer, nullable=False)
 
     factor = db.relationship('Factor', backref='factor_ratings')
-    profile = db.relationship('UserFactorProfile', backref='factor_ratings')
+    profile = db.relationship('UserProfile', backref='factor_ratings')
 
     
     def __repr__(self):
@@ -248,8 +217,8 @@ class Factor(db.Model):
     __tablename__ = "factors"
 
     factor_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    factor_title = db.Column(db.String, nullable=False)
-    factor_description = db.Column(db.String, nullable=False)
+    title = db.Column(db.String, nullable=False)
+    description = db.Column(db.String, nullable=False)
 
     def __repr__(self):
         """ shows information about a Factor """

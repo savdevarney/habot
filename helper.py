@@ -5,7 +5,7 @@ import arrow
 import random
 from flask import session
 from model import (connect_to_db, db, User, CreateHabit, UserHabit, Success,
-    Streak, Partner, Coach, UserFactorProfile, FactorRating, Factor,
+    Streak, Partner, Coach, UserProfile, FactorRating, Factor,
     FactorHabitRating)
 import pycountry
 import phonenumbers
@@ -65,6 +65,57 @@ def send_daily_nudge():
 
     print "the scheduling script ran @ {}".format(time.time())
     print(message.sid)
+
+
+# helper functions for createing a new user
+
+def create_user_return_id(name, mobile, tz):
+    """ creates a new user and returns the assigned user_id"""
+
+    user = User(name=name, mobile=mobile, tz=tz)
+    db.session.add(user)
+    db.session.commit()
+    user = User.query.filter(User.mobile == mobile).first()
+    user_id = user.user_id
+
+    return user_id
+
+def create_profile_return_id(user_id, rating_date):
+    """ creates a new facor profile and returns user_factor_profile_id"""
+
+    new_profile = UserProfile(user_id=user_id, rating_date=rating_date)
+    db.session.add(new_profile)
+    db.session.commit()
+    new_profile = UserProfile.query.filter(UserProfile.user_id == user_id).first()
+    profile_id = new_profile.profile_id
+    
+    return profile_id
+
+
+def create_factor_ratings(profile_id, factor_ratings):
+    """ creates a new record for every factor rated by user (passed through 
+        in factor_ratings dictionary """
+
+    for factor, score in factor_ratings.items():
+        new_rating = FactorRating(profile_id=profile_id, factor_id=factor, score=score)
+        db.session.add(new_rating)
+        db.session.commit()
+
+def get_last_factor_profile(user_id):
+    """ returns the last profile of factor ratings for a user as sorted list 
+    of tuples [('factor title', score)] """
+
+    last_profile = UserProfile.query.filter(UserProfile.user_id == user_id).order_by(UserProfile.rating_date.desc()).first()
+    factor_ratings = last_profile.factor_ratings
+    last_factor_ratings = {}
+    for rating in factor_ratings:
+        last_factor_ratings[rating.factor.title] = rating.score
+
+    sorted_last_ratings = sorted(last_factor_ratings.items())
+
+    return sorted_last_ratings
+
+
 
 
 # helper functions for datetime

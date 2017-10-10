@@ -1,8 +1,9 @@
 """ Utility file to seed habot database with basic static data and test user data """
 
 from sqlalchemy import func
-from model import User, UserProfile, ProfileFactor, BreakHabit, CreateHabit, ReplaceHabit, UserHabit, Success, Streak, Coach
-from model import connect_to_db, db
+from model import (connect_to_db, db, User, CreateHabit, UserHabit, Success,
+    Streak, Partner, Coach, UserProfile, FactorRating, Factor,
+    FactorHabitRating)
 from server import app
 
 
@@ -105,7 +106,7 @@ def load_streaks():
     #delete any data that is in the table:
     Streak.query.delete()
 
-    #open and parase streaks file
+    #open and parse streaks file
     for row in open("data/streaks.csv"):
         row = row.rstrip()
         fields = [field if field !='NULL' else None for field in row.split(",")]
@@ -114,12 +115,31 @@ def load_streaks():
         #create streak
         streak = Streak(streak_id=streak_id, habit_id=habit_id, days=days, start_id=start_id, end_id=end_id)
 
-        #add straek
+        #add streak
         db.session.add(streak)
 
     #submit streaks
     db.session.commit()
 
+def load_factors():
+    """ load the set of factors for users to rate """
+
+    Factor.query.delete()
+
+    #open and parse factors file
+    for row in open("data/factors.csv"):
+        row = row.rstrip()
+        fields = row.split(",")
+        factor_id, title, description = fields
+
+        #create factor
+        factor = Factor(factor_id=factor_id, title=title, description=description)
+
+        #add factor
+        db.session.add(factor)
+
+    #submit factors
+    db.session.commit()
 
 def set_val_user_id():
     """Set value for the next user_id after seeding database with test users"""
@@ -178,6 +198,7 @@ if __name__ == "__main__":
     db.create_all()
 
     # populate data into tables:
+    load_factors()
     load_users()
     load_create_habits()
     load_user_habits()
