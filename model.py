@@ -116,6 +116,7 @@ class UserHabit(db.Model):
     create_habit_id = db.Column(db.Integer, db.ForeignKey('create_habits.create_habit_id'), nullable=False)
     break_habit_id = db.Column(db.Integer, db.ForeignKey('break_habits.break_habit_id'), nullable=True)
     current = db.Column(db.Boolean, nullable=False)
+    active = db.Column(db.Boolean, nullable=False)
     utc_time = db.Column(db.DateTime(timezone=True), nullable=False)
     partner_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
 
@@ -125,9 +126,9 @@ class UserHabit(db.Model):
         return "<habit: habit_id={}, user_id={}, current={}".format(
             self.habit_id, self.user_id, self.current)
 
-    user = db.relationship('User', foreign_keys="UserHabit.user_id", backref='userhabits')
+    user = db.relationship('User', foreign_keys="UserHabit.user_id", backref='user_habits')
 
-    habit = db.relationship('CreateHabit', foreign_keys="UserHabit.create_habit_id", backref='userhabits')
+    habit = db.relationship('CreateHabit', foreign_keys="UserHabit.create_habit_id", backref='user_habits')
 
 
 class Success(db.Model):
@@ -152,7 +153,7 @@ class Success(db.Model):
 class Streak(db.Model):
     """stores information about streaks"""
 
-    ___tablename___ = "streaks"
+    ___tablename__ = "streaks"
 
     streak_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     habit_id = db.Column(db.Integer, db.ForeignKey('user_habits.habit_id'), nullable=False)
@@ -160,15 +161,15 @@ class Streak(db.Model):
     start_id = db.Column(db.Integer, db.ForeignKey('successes.success_id'), nullable=False)
     end_id = db.Column(db.Integer, db.ForeignKey('successes.success_id'), nullable=False)
 
+    habit = db.relationship('UserHabit', backref='streaks')
+    start_success = db.relationship('Success', foreign_keys=[start_id], backref='streak_start')
+    end_success = db.relationship('Success', foreign_keys=[end_id], backref='streak_end')
+
     def __repr__(self):
         """ shows information about a streak"""
 
         return "<streak: habit_id={}, days={}>".format(
             self.habit_id, self.days)
-
-    habit = db.relationship('UserHabit', backref='streaks')
-    start_success = db.relationship('Success', foreign_keys=[start_id], backref='streak_start')
-    end_success = db.relationship('Success', foreign_keys=[end_id], backref='streak_end')
 
 
 class Partner(db.Model):
@@ -203,6 +204,78 @@ class Coach(db.Model):
         return "<coach: coach_id={}, description={}>".format(
             self.coach_id, self.coach_description)
 
+
+class UserFactorProfile(db.Model):
+    """ stores high level information about a user's factor results """
+
+    __tablename__ = "user_factor_profiles"
+
+    user_factor_profile_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    rating_date = db.Column(db.DateTime(timezone=True), nullable=False)
+
+    def __repr__(self):
+        """ shows information about a UserFactorProfile"""
+
+        return "<UserFactorProfile: id={}, date={}>".format(
+            self.user_factor_profile_id, self.rating_date)
+
+
+class FactorRating(db.Model):
+    """ stores detailed information about each score in a user's factor rating """
+
+    __tablename__ = "factor_ratings"
+
+    factor_rating_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_factor_profile_id = db.Column(db.Integer, db.ForeignKey('user_factor_profiles.user_factor_profile_id'), nullable=False)
+    factor_id = db.Column(db.Integer, db.ForeignKey('factors.factor_id'), nullable=False)
+    score = db.Column(db.Integer, nullable=False)
+
+    factor = db.relationship('Factor', backref='factor_ratings')
+    profile = db.relationship('UserFactorProfile', backref='factor_ratings')
+
+    
+    def __repr__(self):
+        """ shows information about a FactorRating """
+
+        return "<FactorRating: id={}, factor_id ={}, score={}>".format(
+            self.factor_rating_id, self.factor_id, self.score)
+
+
+class Factor(db.Model):
+    """ factors a user rates regularly to indicate how well they're doing """
+
+    __tablename__ = "factors"
+
+    factor_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    factor_title = db.Column(db.String, nullable=False)
+    factor_description = db.Column(db.String, nullable=False)
+
+    def __repr__(self):
+        """ shows information about a Factor """
+
+        return "<Factor: id={}, title ={}>".format(
+            self.factor_id, self.title)
+
+
+class FactorHabitRating(db.Model):
+    """ ratings for how well a habit can help a user improve a factor"""
+
+    __tablename__ = "factor_habit_ratings"
+
+    rating_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    create_habit_id = db. Column(db.Integer, db.ForeignKey('create_habits.create_habit_id'), nullable=False)
+    factor_id = db.Column(db.Integer, db.ForeignKey('factors.factor_id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+
+    factor = db.relationship('Factor', backref='factor_habit_ratings')
+    habit = db.relationship('CreateHabit', backref='factor_habit_ratings')
+
+    def __repr__(self):
+        """ shows information about a FactorHabitRating """
+
+        return "<Rating: id={}, habit={}, factor={}, rating={}>".format(
+            self.rating_id, self.create_habit_id, self.factor_id, self.rating)
 
 
 

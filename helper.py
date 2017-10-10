@@ -90,8 +90,10 @@ def get_stats(habit_id):
         {
         'total_days':6,
         'current_streak':6,
+        'current_week_streak':6
         'potential_streak': 7
         'longest_streak': 6
+        'week_streaks': 0
         }
 
         example message from bot:
@@ -120,10 +122,10 @@ def get_stats(habit_id):
     last_success_id = last_success.success_id
 
     # iterate through all streaks to find longest_streak and current_streak (if day qualifies)
-    
     streaks = Streak.query.filter(Streak.habit_id == habit_id).all()
     
-    longest_streak = 0
+    stats['longest_streak'] = 0
+    stats['week_streaks'] = 0
     
     for streak in streaks:
 
@@ -132,10 +134,13 @@ def get_stats(habit_id):
         streak_end = (arrow.get(streak.end_success.time)).to(tz)
         streak_length = -((streak_start.date() - streak_end.date()).days)
         
-        # find longest streak
-        if streak_length > longest_streak:
-            longest_streak = streak_length
+        # determine if it's the longest streak
+        if streak_length > stats['longest_streak']:
             stats['longest_streak'] = streak_length
+
+        # determine if it classifies as a week-long streak
+        if streak_length / 7 > 0:
+            stats['week_streaks'] += 1
         
         # find the last streak
         if streak.end_id == last_success_id:
@@ -151,7 +156,11 @@ def get_stats(habit_id):
                 stats['current_streak'] = 0
                 stats['potential_streak'] = 0
 
+    # find the current_week_streak
+    stats['current_week_streak'] = stats['current_streak'] - (7 * stats['week_streaks'])
+
     return stats
+
 
 def process_success(mobile, time):
 
@@ -278,100 +287,6 @@ def dates_same_or_consecutive(first_datetime, second_datetime, tz):
     else:
         return False
 
-
-
-# a working monolith function (with old db) ... needs to be broken out and work with revised db model. 
-def process_success(mobile, success_time):
-        """ tracks user success in db """
-
-        # get user_id
-        user = User.query.filter(User.mobile == mobile, User.is_partner == False).one()
-        user_id = user.user_id
-
-        # get habit_id and tz
-        user_habit = UserHabit.query.filter(UserHabit.user_id == user_id, UserHabit.current == True).one()
-        habit_id = user_habit.habit_id
-        tz = user_habit.tz
-
-        # convert success_time object to string to store in db if necessary. 
-        time = success_time.format('YYYY-MM-DD HH:mm:ss ZZ')
-
-        # before we add success, make sure success doesn't already exist for that date (in local time)
-        previous_successes = Success.query.filter(Success.habit_id == habit_id).all()
-
-        if previous_successes:
-            print "there were previous successes!"
-            print previous_successes
-            successes = []
-            for success in previous_successes:
-                successes.append(success.time)
-
-            sorted_success_times = sorted(successes)
-
-            # most recent success:
-            last_success = arrow.get(sorted_success_times[-1])
-
-            # convert to local time:
-            last_success_local = last_success.to(tz)
-            print last_success_local
-
-            #convert current success to local time:
-            this_success_local = success_time.to(tz)
-            print this_success_local
-
-            #if they're on the same date, don't add data to db
-            if last_success_local.date() == this_success_local.date():
-                print "success not tracked: success for this day already exists"
-                # TODO: ask agent to say that's already been tracked in response JSON
-
-            else: 
-
-                # add success to db
-                success = Success(habit_id=habit_id, mobile=mobile, time=time)
-                
-                # increment total days in user_habit: 
-                user_habit.total_days += 1
-                print "total number of days now equals: "
-                print user_habit.total_days
-                
-                # check if date deltas = -1 (therefore an existing streak)
-                diff = last_success_local.date() - this_success_local.date()
-                
-                # if existing streak
-                if diff.days == -1:
-
-                    # query to find existing streak
-                    existing_streak = Streak.query.filter(Streak.habit_id == habit_id, Streak.end_id == None).one()
-                    print "existing streak found!"
-                    
-                    # update existing streak days
-                    existing_streak.days += 1
-                    db.session.add(existing_streak)
-                    print "streak incremented! new streak: "
-                    print existing_streak.days
-
-                    # updated longest_streak if new record
-                    if existing_streak.days > user_habit.longest_streak:
-                        
-                        user_habit.longest_streak = existing_streak.days
-                        print "new streak record recorded!"
-                # if no existing streak, create one
-                else:
-                    # create a new streak
-                    new_streak = Streak(habit_id=habit_id, days=1, start=time, end=None)
-                    db.session.add(new_streak)
-
-                db.session.add(success, user_habit)
-                db.session.commit()
-
-                print "success tracked!"
-        else:
-            # add a new success and new_streak to db 
-            success = Success(habit_id=habit_id, mobile=mobile, time=time)
-            new_streak = Streak(habit_id=habit_id, days=1, start=time, end_id=None)
-            db.session.add(success, new_streak)
-            db.session.commit() 
-            # consider adding something custom in response JSON ... congratulating on it being the first time, etc. 
 
 
 

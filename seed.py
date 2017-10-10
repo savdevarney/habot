@@ -64,12 +64,12 @@ def load_user_habits():
         row = row.rstrip()
         fields = [field if field != 'null' else None for field in row.split(",")]
         (habit_id, user_id, create_habit_id, break_habit_id,
-        current, utc_time, partner_id) = fields
+        current, active, utc_time, partner_id) = fields
 
         #create user-habit
         user_habit = UserHabit(habit_id=habit_id, user_id=user_id,
             create_habit_id=create_habit_id, break_habit_id=break_habit_id,
-            current=current, utc_time=utc_time, partner_id=partner_id)
+            current=current, active=active, utc_time=utc_time, partner_id=partner_id)
 
         #add user_habit
         db.session.add(user_habit)
