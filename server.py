@@ -6,10 +6,6 @@ import schedule
 import time
 import datetime
 import arrow
-import pytz
-import phonenumbers
-import pycountry
-from pytz import common_timezones
 from threading import Thread
 from helper import *
 from model import connect_to_db, db, User, CreateHabit, UserHabit, Success, Streak
@@ -50,19 +46,6 @@ def track_success():
     process_success(mobile, success_time)
    
     return 'JSON posted'
-    
-    # TO DO: 
-    # add row to success table w/ user_id, time
-    # user_id = Users.query.filter(mobile == user_mobile and is_partner == False).one().user_id
-    # collect information about user progress: 
-
-    # ENHANCEMENTS:
-    # consider factoring in 'MessagingServiceSid' and/or 'To' values to identify agent and protect against tracking a success for a partner
-    # return a response that allows agent to customize success message w stats: 
-        # total_days = 
-        # current_streak = 
-        # craft speech / display text
-        # speech = 
 
         # logic to determine response 
 
@@ -88,13 +71,9 @@ def track_success():
 def show_homepage():
     """Show homepage."""
 
-    # create a dictionary of country names and country codes:
-    country_info = {}
-    for country in pycountry.countries:
-        country_info[country.name] = country.alpha_2
+    sorted_countries = sort_countries()
 
-
-    return render_template('homepage.html', country_info=country_info)
+    return render_template('homepage.html', sorted_countries=sorted_countries)
 
 
 @app.route('/verify', methods=['GET', 'POST'])
@@ -103,13 +82,8 @@ def verify_user():
 
     mobile = request.args.get('mobile')
     country_code = request.args.get('country_code')
-    print country_code
     session['country_code'] = country_code
-    mobile_object = phonenumbers.parse(mobile, country_code)
-    mobile = phonenumbers.format_number(mobile_object, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
-    print mobile
-    session['mobile'] = mobile
-
+    session['mobile'] = format_mobile(mobile, country_code)
 
     send_confirmation_code(mobile)
 
@@ -190,26 +164,19 @@ def choose_name():
     return render_template('name.html')
     # form to collect name --> send user to factors, but for now --> /habit
 
+
 @app.route('/timezone', methods=['GET'])
 def choose_timezone():
     """ onboarding, step 2 - identify timezone """
 
     name = request.args.get('name')
     session['name'] = name
-    country_calling_code = session['country_calling_code']
-
-
-    #create a list of timezones for a given country
-    country_code = 'US'
-    all_country_timezones = pytz.country_timezones
-    country_timezones = all_country_timezones[country_code] # a list
-    timezones = [] # a list to collect only common times for that country
-    for zone in country_timezones:
-        if zone in common_timezones:
-            timezones.append(zone)
-
+    country_code = session['country_code']
+    
+    timezones = get_country_timezones(country_code)
 
     return render_template('timezone.html', timezones=timezones)
+
 
 # @app.route('/factors')
 # def onboarding():
@@ -309,7 +276,7 @@ def show_confirmation():
 
     # store to user-habits table
     user_habit = UserHabit(user_id=user_id, create_habit_id=create_habit_id, 
-        break_habit_id=break_habit_id, current=current,
+        break_habit_id=break_habit_id, current=True, active=True,
         utc_time=utc_time, partner_id=partner_id)
 
     db.session.add(user_habit)

@@ -7,9 +7,9 @@
 
 <form action='/verify', method='GET'>
     <select name="country_code">
-        { % for key, value in country_info.items() %}
-        <option value="{{ key }}">{{ value }}</option>
-        { % endfor % }
+        {% for item in sorted_countries %}
+        <option value="{{ item[1] }}">{{ item[0] }}</option>
+        {% endfor %}
     </select>
     <input type='text' name='mobile'>
     <input type='submit' value='Lets do this!'>

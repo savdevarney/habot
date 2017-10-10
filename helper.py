@@ -4,7 +4,12 @@ import time
 import arrow
 import random
 from flask import session
-from model import connect_to_db, db, User, CreateHabit, UserHabit, Success, Streak
+from model import (connect_to_db, db, User, CreateHabit, UserHabit, Success,
+    Streak, Partner, Coach, UserFactorProfile, FactorRating, Factor,
+    FactorHabitRating)
+import pycountry
+import phonenumbers
+import pytz
 
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
 auth_token = os.environ["TWILIO_AUTH_TOKEN"]
@@ -80,6 +85,45 @@ def get_utc_hour():
     utc_hour = time_utc.hour
     return utc_hour
 
+# helper functions for country and timezone information
+
+def sort_countries():
+    """ creates a dictionary of country names(keys) and 2-digit country codes 
+    (values) and then returns a sorted list of key, value pairs as tuples in
+    alphabetical order """ 
+
+    country_info = {}
+    for country in pycountry.countries:
+        country_info[country.name] = country.alpha_2
+
+    sorted_countries = sorted(country_info.items())
+    return sorted_countries
+
+def format_mobile(mobile, country_code):
+    """ returns an internatinally formatted mobile number as a string given a 
+    mobile number (string) in any format and a 2-digit country code for that
+    mobile number """
+
+    mobile_object = phonenumbers.parse(mobile, country_code)
+    mobile = phonenumbers.format_number(mobile_object, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+    return mobile
+
+def get_country_timezones(country_code):
+    """ returns a list of timezones (in strings) for a country given the 2-digit
+    country code for that country"""
+
+    # create a dictionary of timezones for every country from pytz
+    # format: {country_code: ['timezone_1', 'timezone_2']}
+    all_country_timezones = pytz.country_timezones
+    # extract the list of all timezones for country
+    country_timezones = all_country_timezones[country_code]
+    timezones = [] # a list to collect only common times for that country
+    # only display zone if in the list of common_timezones
+    for zone in country_timezones:
+        if zone in pytz.common_timezones:
+            timezones.append(zone)
+    return timezones
+
 
 # helper functions for tracking success
 
@@ -118,46 +162,55 @@ def get_stats(habit_id):
 
     # find most recent success to identify current streak
     last_success = find_last_success(habit_id)
-    last_success_time = last_success.time
-    last_success_id = last_success.success_id
+    if last_success:
+        last_success_time = last_success.time
+        last_success_id = last_success.success_id
 
-    # iterate through all streaks to find longest_streak and current_streak (if day qualifies)
-    streaks = Streak.query.filter(Streak.habit_id == habit_id).all()
-    
-    stats['longest_streak'] = 0
-    stats['week_streaks'] = 0
-    
-    for streak in streaks:
-
-        # calculate lengths of all streaks
-        streak_start = (arrow.get(streak.start_success.time)).to(tz)
-        streak_end = (arrow.get(streak.end_success.time)).to(tz)
-        streak_length = -((streak_start.date() - streak_end.date()).days)
+        # iterate through all streaks to find longest_streak and current_streak (if day qualifies)
+        streaks = Streak.query.filter(Streak.habit_id == habit_id).all()
         
-        # determine if it's the longest streak
-        if streak_length > stats['longest_streak']:
-            stats['longest_streak'] = streak_length
-
-        # determine if it classifies as a week-long streak
-        if streak_length / 7 > 0:
-            stats['week_streaks'] += 1
+        stats['longest_streak'] = 0
+        stats['week_streaks'] = 0
         
-        # find the last streak
-        if streak.end_id == last_success_id:
-            # if end of last streak == today or yesterday:
-            if dates_same_or_consecutive(last_success_time, current_time, tz):
-                stats['current_streak'] = streak_length
-                stats['potential_streak'] = streak_length
-                # if end of last streak == yesterday:
-                if dates_consecutive(last_success_time, current_time, tz):
-                    stats['potential_streak'] = streak_length + 1
-            # if end of last streak != today or yesterday: 
-            else:
-                stats['current_streak'] = 0
-                stats['potential_streak'] = 0
+        for streak in streaks:
 
-    # find the current_week_streak
-    stats['current_week_streak'] = stats['current_streak'] - (7 * stats['week_streaks'])
+            # calculate lengths of all streaks
+            streak_start = (arrow.get(streak.start_success.time)).to(tz)
+            streak_end = (arrow.get(streak.end_success.time)).to(tz)
+            streak_length = -((streak_start.date() - streak_end.date()).days)
+            
+            # determine if it's the longest streak
+            if streak_length > stats['longest_streak']:
+                stats['longest_streak'] = streak_length
+
+            # determine if it classifies as a week-long streak
+            if streak_length / 7 > 0:
+                stats['week_streaks'] += 1
+            
+            # find the last streak
+            if streak.end_id == last_success_id:
+                # if end of last streak == today or yesterday:
+                if dates_same_or_consecutive(last_success_time, current_time, tz):
+                    stats['current_streak'] = streak_length
+                    stats['potential_streak'] = streak_length
+                    # if end of last streak == yesterday:
+                    if dates_consecutive(last_success_time, current_time, tz):
+                        stats['potential_streak'] = streak_length + 1
+                # if end of last streak != today or yesterday: 
+                else:
+                    stats['current_streak'] = 0
+                    stats['potential_streak'] = 0
+
+        # find the current_week_streak
+        stats['current_week_streak'] = stats['current_streak'] - (7 * stats['week_streaks'])
+    
+    else:
+        # if no successes ... 
+        stats['longest_streak'] = 0
+        stats['current_streak'] = 0
+        stats['week_streaks'] = 0
+        stats['potential_streak'] = 1
+        stats['current_week_streak'] = 0
 
     return stats
 
