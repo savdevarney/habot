@@ -4,19 +4,19 @@
 <h1>Hi, {{ user_habit.user.name }}
 <h2>You're doing a great job!</h2>
 
-<p>Your current habit: {{ user_habit.habit.create_habit_title }} </p>
+<p>Your current habit: {{ user_habit.habit.title }} </p>
 <p>current streak: {{ stats["current_streak"] }} </p>
 <p>total days: {{ stats["total_days"] }} </p>
 <p>longest streak: {{ stats["longest_streak"] }} </p>
 <p>7 days streaks: {{ stats["week_streaks"] }}
 
-<p> your last ratings: </p>
-<ul>
-{% for factor, rating in sorted_last_ratings %}
-
-<li> {{ factor }}: {{ rating }}
-
-{% endfor %}
-</ul>
+{% if last_factor_ratings %}
+    <p> your last ratings: </p>
+    <ul>
+    {% for rating in last_factor_ratings%}
+    <li> {{ rating.factor.title }}: {{ rating.score }}
+    {% endfor %}
+    </ul>
+{% endif %}
 
 {% endblock %}

@@ -5,8 +5,11 @@
 
 {% for habit in habits %}
 <form action='/time' method='GET'>
+<div>
     <input type="hidden" name="habit_id" value="{{ habit.create_habit_id }}">
-    <input type='submit', value="{{ habit.create_habit_title }}: {{ habit.create_habit_description }}">
+    <input type='submit', value="{{ habit.title }}">
+    <p>{{ habit.description }}</p>
+</div>
 </form>
 {% endfor %}
 

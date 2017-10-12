@@ -2,7 +2,7 @@
 
 from sqlalchemy import func
 from model import (connect_to_db, db, User, CreateHabit, UserHabit, Success,
-    Streak, Partner, Coach, UserProfile, FactorRating, Factor,
+    Streak, Partner, Coach, UserProfile, FactorScore, Factor,
     FactorHabitRating)
 from server import app
 
@@ -37,15 +37,14 @@ def load_create_habits():
     #open and parse habit file
     for row in open("data/create-habits.csv"):
         row = row.rstrip()
-        fields = [field if field != 'null' else None for field in row.split(",")]
-        (create_habit_id, create_habit_title, 
-        create_habit_description, create_habit_hour) = fields
+        fields = [field if field != 'null' else None for field in row.split(',')]
+        create_habit_id, title, description, hour = fields
 
         #create habit
         habit = CreateHabit(create_habit_id=create_habit_id,
-            create_habit_title=create_habit_title,
-            create_habit_description=create_habit_description, 
-            create_habit_hour=create_habit_hour)
+            title=title,
+            description=description,
+            hour=hour)
 
         #add to session
         db.session.add(habit)
@@ -141,6 +140,39 @@ def load_factors():
     #submit factors
     db.session.commit()
 
+
+def load_ratings():
+    """ load the set ratings for each habit (how well they help a factor) """
+
+    FactorHabitRating.query.delete()
+
+    #open and parse factors file
+    for row in open("data/factor-habit-ratings.csv"):
+        row = row.rstrip()
+        fields = row.split(",")
+        create_habit_id, rating_1, rating_2, rating_3, rating_4, rating_5, rating_6 = fields
+
+        #create ratings
+        rating_1 = FactorHabitRating(create_habit_id=create_habit_id, factor_id=1, rating=rating_1)
+        rating_2 = FactorHabitRating(create_habit_id=create_habit_id, factor_id=2, rating=rating_2)
+        rating_3 = FactorHabitRating(create_habit_id=create_habit_id, factor_id=3, rating=rating_3)
+        rating_4 = FactorHabitRating(create_habit_id=create_habit_id, factor_id=4, rating=rating_4)
+        rating_5 = FactorHabitRating(create_habit_id=create_habit_id, factor_id=5, rating=rating_5)
+        rating_6 = FactorHabitRating(create_habit_id=create_habit_id, factor_id=1, rating=rating_6)
+
+        #add ratings
+        db.session.add(rating_1)
+        db.session.add(rating_2)
+        db.session.add(rating_3)
+        db.session.add(rating_4)
+        db.session.add(rating_5)
+        db.session.add(rating_6)
+
+    #submit factors
+    db.session.commit()
+
+
+
 def set_val_user_id():
     """Set value for the next user_id after seeding database with test users"""
 
@@ -198,9 +230,10 @@ if __name__ == "__main__":
     db.create_all()
 
     # populate data into tables:
-    load_factors()
-    load_users()
     load_create_habits()
+    load_factors()
+    load_ratings()
+    load_users()
     load_user_habits()
     load_successes()
     load_streaks()

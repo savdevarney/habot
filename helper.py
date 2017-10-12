@@ -5,7 +5,7 @@ import arrow
 import random
 from flask import session
 from model import (connect_to_db, db, User, CreateHabit, UserHabit, Success,
-    Streak, Partner, Coach, UserProfile, FactorRating, Factor,
+    Streak, Partner, Coach, UserProfile, FactorScore, Factor,
     FactorHabitRating)
 import pycountry
 import phonenumbers
@@ -53,7 +53,7 @@ def send_daily_nudge():
     #TODO - make sure ^ works
 
     for habit in habits:
-        habit = habit.habit.create_habit_title
+        habit = habit.habit.title
         to = habit.user.mobile
         name = habit.user.name
 
@@ -80,6 +80,8 @@ def create_user_return_id(name, mobile, tz):
 
     return user_id
 
+# helper functions for creating a new profile of factor ratings. 
+
 def create_profile_return_id(user_id, rating_date):
     """ creates a new facor profile and returns user_factor_profile_id"""
 
@@ -92,28 +94,60 @@ def create_profile_return_id(user_id, rating_date):
     return profile_id
 
 
-def create_factor_ratings(profile_id, factor_ratings):
-    """ creates a new record for every factor rated by user (passed through 
-        in factor_ratings dictionary """
+def create_factor_scores(profile_id, factor_scores):
+    """ creates a new record for every factor scored by user (passed through 
+        in factor_scores dictionary """
 
-    for factor, score in factor_ratings.items():
-        new_rating = FactorRating(profile_id=profile_id, factor_id=factor, score=score)
+    for factor, score in factor_scores.items():
+        new_rating = FactorScore(profile_id=profile_id, factor_id=factor, score=score)
         db.session.add(new_rating)
         db.session.commit()
 
 def get_last_factor_profile(user_id):
-    """ returns the last profile of factor ratings for a user as sorted list 
-    of tuples [('factor title', score)] """
+    """ returns the last profile (set of factor ratings) for a given user_id 
+    in the format of a list of FactorRating objects """
 
     last_profile = UserProfile.query.filter(UserProfile.user_id == user_id).order_by(UserProfile.rating_date.desc()).first()
-    factor_ratings = last_profile.factor_ratings
-    last_factor_ratings = {}
-    for rating in factor_ratings:
-        last_factor_ratings[rating.factor.title] = rating.score
+    if last_profile:
+        last_factor_scores = last_profile.factor_scores
+        return last_factor_scores
+    else:
+        return None
 
-    sorted_last_ratings = sorted(last_factor_ratings.items())
 
-    return sorted_last_ratings
+# helper functions for making recommendations
+
+def get_recommendations(user_id):
+    """ returns a ranked list of recommended habits for the user """ 
+
+    # a list of FactorRating objects
+    last_factor_scores = get_last_factor_profile(user_id) 
+
+    # score each habit for user based on factor profile and habit ratings for each factor
+    habits = CreateHabit.query.all()
+    habit_ratings = FactorHabitRating.query.all()
+    
+    # create a dictionary of all habits to hold rankings after they're calculated
+    habit_rankings = {}
+    for habit in habits: 
+        habit_rankings[habit.create_habit_id] = 0
+
+    
+    for habit in habits:
+        habit_score = 0
+        create_habit_id = habit.create_habit_id
+        for rating in habit_ratings:
+            factor_id = rating.factor_id
+            rating = rating.rating
+            for score in last_factor_scores:
+                if score.factor_id == factor_id:
+                    score = score.score
+                    factor_habit_score = rating * score
+                    habit_score += factor_habit_score
+        habit_rankings[create_habit_id] = habit_score
+
+    return habit_rankings
+
 
 
 

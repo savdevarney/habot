@@ -8,7 +8,10 @@
 <form action='/verify', method='GET'>
     <select name="country_code">
         {% for item in sorted_countries %}
-        <option value="{{ item[1] }}">{{ item[0] }}</option>
+        <option value="{{ item[1] }}" 
+            {% if item[1] == default_country %} selected="selected" {% endif %}>
+            {{ item[0] }}
+        </option>
         {% endfor %}
     </select>
     <input type='text' name='mobile'>

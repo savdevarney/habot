@@ -48,15 +48,15 @@ class CreateHabit(db.Model):
     __tablename__ = "create_habits"
 
     create_habit_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    create_habit_title = db.Column(db.String(50), nullable=False)
-    create_habit_description = db.Column(db.String(100), nullable=False)
-    create_habit_hour = db.Column(db.Integer, nullable=False)
+    title = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.String, nullable=False)
+    hour = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
         """ shows information about the habit """
 
         return "<CreateHabit: create_habit_id={} description={}>".format(
-            self.create_habit_id, self.create_habit_title)
+            self.create_habit_id, self.title)
 
 
 class ReplaceHabit(db.Model):
@@ -190,18 +190,18 @@ class UserProfile(db.Model):
             self.profile_id, self.rating_date)
 
 
-class FactorRating(db.Model):
+class FactorScore(db.Model):
     """ stores detailed information about each score in a user's factor rating """
 
-    __tablename__ = "factor_ratings"
+    __tablename__ = "factor_scores"
 
     factor_rating_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     profile_id = db.Column(db.Integer, db.ForeignKey('user_profiles.profile_id'), nullable=False)
     factor_id = db.Column(db.Integer, db.ForeignKey('factors.factor_id'), nullable=False)
     score = db.Column(db.Integer, nullable=False)
 
-    factor = db.relationship('Factor', backref='factor_ratings')
-    profile = db.relationship('UserProfile', backref='factor_ratings')
+    factor = db.relationship('Factor', backref='factor_scores')
+    profile = db.relationship('UserProfile', backref='factor_scores')
 
     
     def __repr__(self):

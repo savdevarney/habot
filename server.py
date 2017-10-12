@@ -9,7 +9,7 @@ import arrow
 from threading import Thread
 from helper import *
 from model import (connect_to_db, db, User, CreateHabit, UserHabit, Success,
-    Streak, Partner, Coach, UserProfile, FactorRating, Factor,
+    Streak, Partner, Coach, UserProfile, FactorScore, Factor,
     FactorHabitRating)
 
 app = Flask(__name__)
@@ -75,7 +75,9 @@ def show_homepage():
 
     sorted_countries = sort_countries()
 
-    return render_template('homepage.html', sorted_countries=sorted_countries)
+    default_country = 'US'
+
+    return render_template('homepage.html', sorted_countries=sorted_countries, default_country=default_country)
 
 
 @app.route('/verify', methods=['GET', 'POST'])
@@ -145,12 +147,12 @@ def create_user():
     
     #create dictionary of results from factor rating to pass into create_factor_rating
     factors = Factor.query.all()
-    factor_ratings = {}
+    factor_scores = {}
     for factor in factors:
         score = request.args.get('{}'.format(factor.factor_id))
-        factor_ratings[factor.factor_id] = int(score)
+        factor_scores[factor.factor_id] = int(score)
 
-    create_factor_ratings(profile_id, factor_ratings)
+    create_factor_scores(profile_id, factor_scores)
 
     
     return redirect('/habit')
@@ -168,9 +170,9 @@ def show_dashboard():
 
     stats = get_stats(user_habit.habit_id)
 
-    sorted_last_ratings = get_last_factor_profile(user_id)
+    last_factor_scores = get_last_factor_profile(user_id)
 
-    return render_template('dashboard.html', user_habit=user_habit, stats=stats, sorted_last_ratings=sorted_last_ratings)
+    return render_template('dashboard.html', user_habit=user_habit, stats=stats, last_factor_scores=last_factor_scores)
 
     
 @app.route('/name')
@@ -207,35 +209,29 @@ def rate_factors():
 
 
 @app.route('/habit')
-def habit_selection_1():
-    """ first step of new habit process """
+def show_recommended_habits():
+    """ show habits recommended to user based on user profile and habit ratings 
+    for that profile"""
 
-    # choice - break an existing habit? Create a new habit?
-    # if break - /habit-break-recs
-    # if new - /habit-recs 
+    user_id = session['user_id']
 
-    habits = CreateHabit.query.all()
-    print habits
+    recommendations = get_recommendations(user_id)
 
-    # temporary ... 
-    return render_template('browse.html', habits=habits) 
+    print recommendations
+
+    return render_template('recommend.html')
+
+
+
+ 
     
 
+@app.route('/habits')
+def show_all_habits():
+    
+    habits = CreateHabit.query.all()
 
-# @app.route('/habit-break-recs')
-# def display_break_recs():
-#     """ display suggested habits to break based on factors """
-
-#     # ajax call to get 4 more recommendations?
-
-#     return render_template('habit-recs.html')
-
-
-# @app.route('/habit-break-browse')
-# def browse_break_habits():
-#     """ display library of habits to break """
-
-#     return render_template('habit-break-browse.html')
+    return render_template('browse.html', habits=habits)
 
 
 @app.route('/time', methods=['POST', 'GET'])
@@ -249,12 +245,6 @@ def define_habit_time():
 
     return render_template("time.html")
 
-
-# @app.route('/habit-recs')
-
-# if 'break' in session, display diff text (re: replacement)
-
-# @app.route('/habit-browse')
 
 @app.route('/confirm', methods=['POST', 'GET'])
 def show_confirmation():
