@@ -141,9 +141,9 @@ def create_user():
     #set user_id in session
     session['user_id'] = user_id
 
-    #set rating_date & create a UserFactorProfile
-    rating_date = (arrow.utcnow()).format('YYYY-MM-DD HH:mm:ss ZZ')
-    profile_id = create_profile_return_id(user_id, rating_date)
+    #set profile date & create a UserFactorProfile
+    date = (arrow.utcnow()).format('YYYY-MM-DD HH:mm:ss ZZ')
+    profile_id = create_profile_return_id(user_id, date)
     
     #create dictionary of results from factor rating to pass into create_factor_rating
     factors = Factor.query.all()
@@ -162,17 +162,19 @@ def create_user():
 def show_dashboard():
     """ display user progress"""
 
-    # gather data about current habit and display to user
-
     user_id = session['user_id']
 
+    # calculate and render data about current habit
     user_habit = UserHabit.query.filter(UserHabit.user_id == user_id, UserHabit.current == True).first()
-
     stats = get_stats(user_habit.habit_id)
 
+    # calculate and render data about most recent factor scores
     last_factor_scores = get_last_factor_profile(user_id)
 
-    return render_template('dashboard.html', user_habit=user_habit, stats=stats, last_factor_scores=last_factor_scores)
+    habit_fits = get_recommendations(user_id)
+
+    return render_template('dashboard.html', user_habit=user_habit,
+        stats=stats, last_factor_scores=last_factor_scores, habit_fits=habit_fits)
 
     
 @app.route('/name')
@@ -215,16 +217,10 @@ def show_recommended_habits():
 
     user_id = session['user_id']
 
-    recommendations = get_recommendations(user_id)
+    habit_fits = get_recommendations(user_id)
 
-    print recommendations
+    return render_template('recommend.html', habit_fits=habit_fits)
 
-    return render_template('recommend.html')
-
-
-
- 
-    
 
 @app.route('/habits')
 def show_all_habits():

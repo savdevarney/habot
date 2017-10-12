@@ -181,13 +181,15 @@ class UserProfile(db.Model):
 
     profile_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    rating_date = db.Column(db.DateTime(timezone=True), nullable=False)
+    date = db.Column(db.DateTime(timezone=True), nullable=False)
 
     def __repr__(self):
         """ shows information about a UserProfile"""
 
         return "<UserProfile: id={}, date={}>".format(
-            self.profile_id, self.rating_date)
+            self.profile_id, self.date)
+
+    user = db.relationship('User', backref='user_profiles')
 
 
 class FactorScore(db.Model):
@@ -200,15 +202,15 @@ class FactorScore(db.Model):
     factor_id = db.Column(db.Integer, db.ForeignKey('factors.factor_id'), nullable=False)
     score = db.Column(db.Integer, nullable=False)
 
-    factor = db.relationship('Factor', backref='factor_scores')
-    profile = db.relationship('UserProfile', backref='factor_scores')
-
     
     def __repr__(self):
         """ shows information about a FactorRating """
 
-        return "<FactorRating: id={}, factor_id ={}, score={}>".format(
+        return "<FactorScore: id={}, factor_id ={}, score={}>".format(
             self.factor_rating_id, self.factor_id, self.score)
+
+    factor = db.relationship('Factor', backref='factor_scores')
+    profile = db.relationship('UserProfile', backref='factor_scores')
 
 
 class Factor(db.Model):

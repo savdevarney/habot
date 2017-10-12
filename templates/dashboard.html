@@ -10,13 +10,15 @@
 <p>longest streak: {{ stats["longest_streak"] }} </p>
 <p>7 days streaks: {{ stats["week_streaks"] }}
 
-{% if last_factor_ratings %}
-    <p> your last ratings: </p>
+{% if last_factor_scores %}
+    <p> your last scores: </p>
     <ul>
-    {% for rating in last_factor_ratings%}
-    <li> {{ rating.factor.title }}: {{ rating.score }}
+    {% for score in last_factor_scores%}
+    <li> {{ score.factor.title }}: {{ score.score }}
     {% endfor %}
     </ul>
 {% endif %}
+
+{{ habit_fits }}
 
 {% endblock %}

@@ -82,10 +82,10 @@ def create_user_return_id(name, mobile, tz):
 
 # helper functions for creating a new profile of factor ratings. 
 
-def create_profile_return_id(user_id, rating_date):
+def create_profile_return_id(user_id, date):
     """ creates a new facor profile and returns user_factor_profile_id"""
 
-    new_profile = UserProfile(user_id=user_id, rating_date=rating_date)
+    new_profile = UserProfile(user_id=user_id, date=date)
     db.session.add(new_profile)
     db.session.commit()
     new_profile = UserProfile.query.filter(UserProfile.user_id == user_id).first()
@@ -98,17 +98,21 @@ def create_factor_scores(profile_id, factor_scores):
     """ creates a new record for every factor scored by user (passed through 
         in factor_scores dictionary """
 
+    print factor_scores
+
     for factor, score in factor_scores.items():
         new_rating = FactorScore(profile_id=profile_id, factor_id=factor, score=score)
         db.session.add(new_rating)
         db.session.commit()
 
+
 def get_last_factor_profile(user_id):
     """ returns the last profile (set of factor ratings) for a given user_id 
     in the format of a list of FactorRating objects """
 
-    last_profile = UserProfile.query.filter(UserProfile.user_id == user_id).order_by(UserProfile.rating_date.desc()).first()
+    last_profile = UserProfile.query.filter(UserProfile.user_id == user_id).order_by(UserProfile.date.desc()).first()
     if last_profile:
+        # a list of FactorScore objects
         last_factor_scores = last_profile.factor_scores
         return last_factor_scores
     else:
@@ -120,36 +124,43 @@ def get_last_factor_profile(user_id):
 def get_recommendations(user_id):
     """ returns a ranked list of recommended habits for the user """ 
 
-    # a list of FactorRating objects
+    # create a dictionary of the latest factor scores from the most recent profile.
     last_factor_scores = get_last_factor_profile(user_id) 
+    factor_scores = {}
+    print last_factor_scores
+    
+    for score in last_factor_scores:
+        factor_scores[score.factor_id] = score.score
 
-    # score each habit for user based on factor profile and habit ratings for each factor
+    # grab all habits
     habits = CreateHabit.query.all()
-    habit_ratings = FactorHabitRating.query.all()
     
     # create a dictionary of all habits to hold rankings after they're calculated
-    habit_rankings = {}
-    for habit in habits: 
-        habit_rankings[habit.create_habit_id] = 0
-
+    habit_fits = {}
     
+    for habit in habits: 
+        habit_fits[habit.create_habit_id] = 0
+
+    # recommend habits by determining the 'fit' of each habit for a user (higher = better)
     for habit in habits:
-        habit_score = 0
+        habit_fit = 0
+        # get the habit_id
         create_habit_id = habit.create_habit_id
+        #get all ratings for that habit (how well the support a given factor)
+        habit_ratings = FactorHabitRating.query.filter(
+            FactorHabitRating.create_habit_id == create_habit_id).all()
+        # for each rating, for each habit, calculate 'fit' for user
         for rating in habit_ratings:
             factor_id = rating.factor_id
             rating = rating.rating
-            for score in last_factor_scores:
-                if score.factor_id == factor_id:
-                    score = score.score
-                    factor_habit_score = rating * score
-                    habit_score += factor_habit_score
-        habit_rankings[create_habit_id] = habit_score
+            score = factor_scores[factor_id]
+            # based on a single factor score
+            factor_habit_fit = rating * score
+            # calculate overall fit for user by summing habit ratings across all factors
+            habit_fit += factor_habit_fit
+        habit_fits[create_habit_id] = habit_fit
 
-    return habit_rankings
-
-
-
+    return habit_fits
 
 
 # helper functions for datetime

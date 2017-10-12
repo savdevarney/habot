@@ -158,7 +158,7 @@ def load_ratings():
         rating_3 = FactorHabitRating(create_habit_id=create_habit_id, factor_id=3, rating=rating_3)
         rating_4 = FactorHabitRating(create_habit_id=create_habit_id, factor_id=4, rating=rating_4)
         rating_5 = FactorHabitRating(create_habit_id=create_habit_id, factor_id=5, rating=rating_5)
-        rating_6 = FactorHabitRating(create_habit_id=create_habit_id, factor_id=1, rating=rating_6)
+        rating_6 = FactorHabitRating(create_habit_id=create_habit_id, factor_id=6, rating=rating_6)
 
         #add ratings
         db.session.add(rating_1)
