@@ -11,6 +11,7 @@ import pycountry
 import phonenumbers
 import pytz
 
+
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
 auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 messaging_service_sid = os.environ["TWILIO_MESSAGING_SERVICE_SID"]
@@ -122,13 +123,13 @@ def get_last_factor_profile(user_id):
 # helper functions for making recommendations
 
 def get_recommendations(user_id):
-    """ returns a ranked list of recommended habits for the user """ 
+    """ returns a ranked list of recommended habits for the user  as 
+    CreateHabit objects. """
 
     # create a dictionary of the latest factor scores from the most recent profile.
     last_factor_scores = get_last_factor_profile(user_id) 
     factor_scores = {}
-    print last_factor_scores
-    
+
     for score in last_factor_scores:
         factor_scores[score.factor_id] = score.score
 
@@ -160,7 +161,44 @@ def get_recommendations(user_id):
             habit_fit += factor_habit_fit
         habit_fits[create_habit_id] = habit_fit
 
-    return habit_fits
+    recommended_habits = []
+    
+    for habit in habit_fits:
+        if habit_fits[habit] > 0:
+            ranked_habit = (habit_fits[habit], habit)
+            recommended_habits.append(ranked_habit)
+
+    recommended_habits.sort(reverse=True)
+    print recommended_habits
+
+    ranked_habits = []
+
+    for habit in recommended_habits:
+        habit_id = habit[1]
+        habit_obj = CreateHabit.query.filter(CreateHabit.create_habit_id == habit_id).first()
+        ranked_habits.append(habit_obj)
+    
+    return ranked_habits
+
+def add_new_habit(user_id, create_habit_id, break_habit_id, utc_time, partner_id):
+    """ sets any previous habits to current=False and adds new habit for user """
+
+    # look up any other habits user has and set current flag to false
+    previous_user_habits = UserHabit.query.filter(User.user_id == user_id).all()
+    
+    if previous_user_habits:
+        for habit in previous_user_habits:
+            habit.current == False
+            db.session.add(habit)
+
+    # store to user-habits table
+    user_habit = UserHabit(user_id=user_id, create_habit_id=create_habit_id, 
+        break_habit_id=break_habit_id, current=True, active=True,
+        utc_time=utc_time, partner_id=partner_id)
+
+    db.session.add(user_habit)
+    
+    db.session.commit()
 
 
 # helper functions for datetime

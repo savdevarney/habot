@@ -3,32 +3,36 @@
 
 <h1>What time do you want to do that?</h1>
 
+
+{% if hour == 0 %} selected="selected" {% endif %}
+
+
 <form action='/confirm', method='GET'>
     <select name='hour'>
-        <option value='0'>12 am</option>
-        <option value='1'>1 am</option>
-        <option value='2'>2 am</option>
-        <option value='3'>3 am</option>
-        <option value='4'>4 am</option>
-        <option value='5'>5 am</option>
-        <option value='6'>6 am</option>
-        <option value='7'>7 am</option>
-        <option value='8'>8 am</option>
-        <option value='9'>9 am</option>
-        <option value='10'>10 am</option>
-        <option value='11'>11 am</option>
-        <option value='12'>12 pm</option>
-        <option value='13'>1 pm</option>
-        <option value='14'>2 pm</option>
-        <option value='15'>3 pm</option>
-        <option value='16'>4 pm</option>
-        <option value='17'>5 pm</option>
-        <option value='18'>6 pm</option>
-        <option value='19'>7 pm</option>
-        <option value='20'>8 pm</option>
-        <option value='21'>9 pm</option>
-        <option value='23'>10 pm</option>
-        <option value='24'>11 pm</option>
+        <option value='0'{% if hour == 0 %} selected="selected" {% endif %}>12 am</option>
+        <option value='1'{% if hour == 1 %} selected="selected" {% endif %}>1 am</option>
+        <option value='2'{% if hour == 2 %} selected="selected" {% endif %}>2 am</option>
+        <option value='3'{% if hour == 3 %} selected="selected" {% endif %}>3 am</option>
+        <option value='4'{% if hour == 4 %} selected="selected" {% endif %}>4 am</option>
+        <option value='5'{% if hour == 5 %} selected="selected" {% endif %}>5 am</option>
+        <option value='6'{% if hour == 6 %} selected="selected" {% endif %}>6 am</option>
+        <option value='7'{% if hour == 7 %} selected="selected" {% endif %}>7 am</option>
+        <option value='8'{% if hour == 8 %} selected="selected" {% endif %}>8 am</option>
+        <option value='9'{% if hour == 9 %} selected="selected" {% endif %}>9 am</option>
+        <option value='10'{% if hour == 10 %} selected="selected" {% endif %}>10 am</option>
+        <option value='11'{% if hour == 11 %} selected="selected" {% endif %}>11 am</option>
+        <option value='12'{% if hour == 12 %} selected="selected" {% endif %}>12 pm</option>
+        <option value='13'{% if hour == 13 %} selected="selected" {% endif %}>1 pm</option>
+        <option value='14'{% if hour == 14 %} selected="selected" {% endif %}>2 pm</option>
+        <option value='15'{% if hour == 15 %} selected="selected" {% endif %}>3 pm</option>
+        <option value='16'{% if hour == 16 %} selected="selected" {% endif %}>4 pm</option>
+        <option value='17'{% if hour == 17 %} selected="selected" {% endif %}>5 pm</option>
+        <option value='18'{% if hour == 18 %} selected="selected" {% endif %}>6 pm</option>
+        <option value='19'{% if hour == 19 %} selected="selected" {% endif %}>7 pm</option>
+        <option value='20'{% if hour == 20 %} selected="selected" {% endif %}>8 pm</option>
+        <option value='21'{% if hour == 21 %} selected="selected" {% endif %}>9 pm</option>
+        <option value='22'{% if hour == 22 %} selected="selected" {% endif %}>10 pm</option>
+        <option value='23'{% if hour == 23 %} selected="selected" {% endif %}>11 pm</option>
     </select>
 <!--     <select name='tz'>
         <option value='US/Alaska'>Alaska</option>

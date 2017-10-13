@@ -103,7 +103,6 @@ def log_in_user():
     # verify correct code with Twilio
     session['code'] = code
     mobile = session['mobile']
-    print mobile 
 
     # if correct code:
     if code == session['verification_code']:
@@ -171,10 +170,8 @@ def show_dashboard():
     # calculate and render data about most recent factor scores
     last_factor_scores = get_last_factor_profile(user_id)
 
-    habit_fits = get_recommendations(user_id)
-
     return render_template('dashboard.html', user_habit=user_habit,
-        stats=stats, last_factor_scores=last_factor_scores, habit_fits=habit_fits)
+        stats=stats, last_factor_scores=last_factor_scores)
 
     
 @app.route('/name')
@@ -217,9 +214,44 @@ def show_recommended_habits():
 
     user_id = session['user_id']
 
-    habit_fits = get_recommendations(user_id)
+    ranked_habits = get_recommendations(user_id)
 
-    return render_template('recommend.html', habit_fits=habit_fits)
+    return render_template('recommend.html', ranked_habits=ranked_habits)
+
+@app.route('/get-recs.json')
+def display_recommendations():
+    """ show habits recommended to user based on user profile and habit ratings
+    for that profile. Paginate by 4 via an ajax call"""
+
+    user_id = session['user_id']
+
+    ranked_habits = get_recommendations(user_id)
+    length = len(ranked_habits)
+    
+    # utilize a counter to paginate recs by 4 habits
+    if 'rec_start' in session:
+
+        index = session['rec_start']
+        # reset the counter if this request would provide the last recs in list
+        if (length % 4 == 0) and (length == index):
+            session['rec_start'] = 4
+        elif index > (length - (length % 4)):
+            session['rec_start'] = 4
+        # if not at end of list, increment the counter
+        else:
+            session['rec_start'] += 4
+    else:
+        # if it's the user's first request, create counter
+        session['rec_start'] = 4
+        index = 4
+
+    recs = ranked_habits[(index-4):index]
+
+    recommendations = {}
+    for rec in recs: 
+        recommendations[rec.create_habit_id] = [rec.title, rec.description]
+
+    return jsonify(recommendations)
 
 
 @app.route('/habits')
@@ -237,9 +269,13 @@ def define_habit_time():
     # # if 'break' in session, display diff text (re: replacement)
 
     habit_id = request.args.get('habit_id')
+    #get reomended hour for habit
+    habit = CreateHabit.query.filter(CreateHabit.create_habit_id == habit_id).first()
+    hour = habit.hour
+
     session['habit_id'] = habit_id
 
-    return render_template("time.html")
+    return render_template("time.html", hour=hour)
 
 
 @app.route('/confirm', methods=['POST', 'GET'])
@@ -262,7 +298,7 @@ def show_confirmation():
     utc_time = utc_time.format('YYYY-MM-DD HH:mm:ss ZZ')
    
     create_habit_id = session['habit_id']
-    current = True
+   
     if 'break_habit_id' not in session:
         break_habit_id = None
     else:
@@ -272,44 +308,10 @@ def show_confirmation():
     else:
         partner_id = session['partner_id']
 
-    # look up any other habits user has and set current flag to false
-    previous_user_habits = UserHabit.query.filter(User.user_id == user_id).all()
-    
-    if previous_user_habits:
-        for habit in previous_user_habits:
-            habit.current == False
-            db.session.add(habit)
-
-    # store to user-habits table
-    user_habit = UserHabit(user_id=user_id, create_habit_id=create_habit_id, 
-        break_habit_id=break_habit_id, current=True, active=True,
-        utc_time=utc_time, partner_id=partner_id)
-
-    db.session.add(user_habit)
-    
-    db.session.commit()
+    add_new_habit(user_id, create_habit_id, break_habit_id, utc_time, partner_id)
 
     return render_template('confirm.html', user_habit=user_habit, hour=hour)
 
-
-# @app.route('/habit-coach')
-
-# @app.route('/habit-partner')
-
-# @app.route('/habit-ready')
-
-# @app.route('/receive-messages', mehtods=['GET', 'POST'])
-# def collect_success():
-#     """ webhook for receiving success requests from API.AI """
-
-
-# @app.route('/get-habit-stats', methods=['GET', 'POST'])
-# def collect_habit_stats():
-#     """ webhook for API.AI to request info to use in user reesponse
-    
-#     API.AI lingo: 'webhook for slot-filling on the intent' 
-
-#     for example: "well done, {Sav}! That's {5} days in a row"! """
 
 
 def run_schedule():

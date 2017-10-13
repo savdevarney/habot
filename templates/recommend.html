@@ -1,12 +1,39 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1> recommended habits for you </h1>
-<p> {{ habit_fits }}
+<h1> Recommended habits for you: </h1>
 
-<a href="/get-reccommendations">get more recommendations</a>
+<div id='habits-div'>
+    {% for habit in ranked_habits %}
+    <form action='/time' method='GET'>
+        <div id='habit-div'>
+            <input type="hidden" name="habit_id" value="{{ habit.create_habit_id }}">
+            <input type='submit', value="{{ habit.title }}: {{ habit.description }}">
+        </div>
+    </form>
+{% endfor %}
+</div>
+
+<a id="get-recs" href="/get-reccommendations">get more recommendations</a>
 <br>
 <a href="/habits">browse all habits</a>
 
 
 {% endblock %}
+
+<script>
+
+function updateRecommendations() {
+    $.get('/get_recs')
+}
+
+// iterate over dictionary to get id(key) and vale of [title, description]
+var title = json[id][0]
+var description = json[id][1]
+var submit = "<input type='submit' value=" + title + " " + description + ">"
+
+$('#habit-div').append(submit)
+
+$('#get-recs').on(click, updateRecommendations)
+
+</script>
