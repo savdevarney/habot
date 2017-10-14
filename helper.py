@@ -123,7 +123,7 @@ def get_last_factor_profile(user_id):
 # helper functions for making recommendations
 
 def get_recommendations(user_id):
-    """ returns a ranked list of recommended habits for the user  as 
+    """ returns a ranked list of recommended habits for the user as 
     CreateHabit objects. """
 
     # create a dictionary of the latest factor scores from the most recent profile.
@@ -180,7 +180,7 @@ def get_recommendations(user_id):
     
     return ranked_habits
 
-def add_new_habit(user_id, create_habit_id, break_habit_id, utc_time, partner_id):
+def add_new_habit_return_id(user_id, create_habit_id, break_habit_id, utc_time, partner_id):
     """ sets any previous habits to current=False and adds new habit for user """
 
     # look up any other habits user has and set current flag to false
@@ -199,6 +199,12 @@ def add_new_habit(user_id, create_habit_id, break_habit_id, utc_time, partner_id
     db.session.add(user_habit)
     
     db.session.commit()
+
+    habit = UserHabit.query.filter(UserHabit.user_id == user_id).order_by(UserHabit.habit_id.desc()).first()
+
+    habit_id = habit.habit_id
+
+    return habit_id
 
 
 # helper functions for datetime

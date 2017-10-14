@@ -2,6 +2,7 @@
 {% block content %}
 
 <h1> Recommended habits for you: </h1>
+<p> session['rec_index']: {{ session['rec_index'] }}</p>
 
 <div id='habits-div'>
     <form id='rec-form' action='/time' method='GET'>
@@ -17,13 +18,17 @@
 "use_strict";
 
 function showRecs(results) {
-    // iterate over json keys to get values [title, description] for each key
-    for (var id in results) {
-        var title = results[id][0];
-        var description = results[id][1];
-        var div = "<div id='habit-div'><input type='hidden' value=" + id + ">" + "<input type='submit' value=" + title + " " + description + "></div>";
-        $('#rec-form').empty();
-        $('#rec-form').html(div);
+    // json structure: { habit_id: 'id' { title: 'title', description: 'description'}}
+    $('#rec-form').empty();
+    var result = results
+    console.log(results)
+    for (var id in result) {
+        var habit_id = id
+        console.log(habit_id)
+        var title = result[habit_id]["title"];
+        var description = result[habit_id]["description"];
+        var div = "<div id='habit-div'><input type='hidden' name='habit_id' value=" +  habit_id + ">" + "<input type='submit' value=" + "'" + title + ": " + description + "'" + "></div>";
+        $('#rec-form').append(div);
     }
 }
 

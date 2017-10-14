@@ -9,11 +9,12 @@
 <p>total days: {{ stats["total_days"] }} </p>
 <p>longest streak: {{ stats["longest_streak"] }} </p>
 <p>7 days streaks: {{ stats["week_streaks"] }}
+<p>potential streak: {{ stats["potential_streak"] }}
 
 {% if last_factor_scores %}
     <p> your last scores: </p>
     <ul>
-    {% for score in last_factor_scores%}
+    {% for score in last_factor_scores %}
     <li> {{ score.factor.title }}: {{ score.score }}
     {% endfor %}
     </ul>
