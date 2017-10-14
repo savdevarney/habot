@@ -138,16 +138,20 @@ def get_recommendations(user_id):
     
     # create a dictionary of all habits to hold rankings after they're calculated
     habit_fits = {}
+
+    # default list for when user scores highest possible on all profile scores
+    default = []
     
     for habit in habits: 
         habit_fits[habit.create_habit_id] = 0
+        default_habits.append(habit)
 
-    # recommend habits by determining the 'fit' of each habit for a user (higher = better)
+    # recommend habits by determining 'fit' of each habit for user (higher = better)
     for habit in habits:
         habit_fit = 0
         # get the habit_id
         create_habit_id = habit.create_habit_id
-        #get all ratings for that habit (how well the support a given factor)
+        # get all ratings for that habit (how well it supports a given factor)
         habit_ratings = FactorHabitRating.query.filter(
             FactorHabitRating.create_habit_id == create_habit_id).all()
         # for each rating, for each habit, calculate 'fit' for user
@@ -155,10 +159,11 @@ def get_recommendations(user_id):
             factor_id = rating.factor_id
             rating = rating.rating
             score = factor_scores[factor_id]
-            # based on a single factor score
+            # calculate fit for a single factor
             factor_habit_fit = rating * score
-            # calculate overall fit for user by summing habit ratings across all factors
+            # calculate overall fit by summing habit ratings across all factors
             habit_fit += factor_habit_fit
+        # populate habit_fits dictionary: { id : # }
         habit_fits[create_habit_id] = habit_fit
 
     recommended_habits = []
@@ -169,16 +174,21 @@ def get_recommendations(user_id):
             recommended_habits.append(ranked_habit)
 
     recommended_habits.sort(reverse=True)
-    print recommended_habits
+    # format: [(#, id), (#, id), (#, id)]
 
-    ranked_habits = []
+    if recommended_habits:
+        ranked_habits = []
 
-    for habit in recommended_habits:
-        habit_id = habit[1]
-        habit_obj = CreateHabit.query.filter(CreateHabit.create_habit_id == habit_id).first()
-        ranked_habits.append(habit_obj)
+        for habit in recommended_habits:
+            habit_id = habit[1]
+            habit_obj = CreateHabit.query.filter(CreateHabit.create_habit_id == habit_id).first()
+            ranked_habits.append(habit_obj)
     
-    return ranked_habits
+        return ranked_habits # a list of CreateHabit objects
+
+    else:
+
+        return default
 
 def add_new_habit_return_id(user_id, create_habit_id, break_habit_id, utc_time, partner_id):
     """ sets any previous habits to current=False and adds new habit for user """
