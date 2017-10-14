@@ -4,11 +4,11 @@
 <h1> Recommended habits for you: </h1>
 
 <div id='habits-div'>
-    <form id='form' action='/time' method='GET'>
+    <form id='rec-form' action='/time' method='GET'>
     </form>
 </div>
 
-<a id="get-recs" href="/get-recs.json">get more recommendations</a>
+<a id="get-recs" href="/get-recs.json">more recommendations</a>
 <br>
 <a href="/habits">browse all habits</a>
 
@@ -21,10 +21,9 @@ function showRecs(results) {
     for (var id in results) {
         var title = results[id][0];
         var description = results[id][1];
-        var div = "<div id='habit-div'></div>";
-        var option = "<input type='hidden' value=" + id + ">" + "<input type='submit' value=" + title + " " + description + ">";
-        $('#form').html(div);
-        $('#habit-div').html(option);
+        var div = "<div id='habit-div'><input type='hidden' value=" + id + ">" + "<input type='submit' value=" + title + " " + description + "></div>";
+        $('#rec-form').empty();
+        $('#rec-form').html(div);
     }
 }
 
