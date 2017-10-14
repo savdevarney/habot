@@ -4,36 +4,44 @@
 <h1> Recommended habits for you: </h1>
 
 <div id='habits-div'>
-    {% for habit in ranked_habits %}
-    <form action='/time' method='GET'>
-        <div id='habit-div'>
-            <input type="hidden" name="habit_id" value="{{ habit.create_habit_id }}">
-            <input type='submit', value="{{ habit.title }}: {{ habit.description }}">
-        </div>
+    <form id='form' action='/time' method='GET'>
     </form>
-{% endfor %}
 </div>
 
-<a id="get-recs" href="/get-reccommendations">get more recommendations</a>
+<a id="get-recs" href="/get-recs.json">get more recommendations</a>
 <br>
 <a href="/habits">browse all habits</a>
 
+<script>
+
+"use_strict";
+
+function showRecs(results) {
+    // iterate over json keys to get values [title, description] for each key
+    for (var id in results) {
+        var title = results[id][0];
+        var description = results[id][1];
+        var div = "<div id='habit-div'></div>";
+        var option = "<input type='hidden' value=" + id + ">" + "<input type='submit' value=" + title + " " + description + ">";
+        $('#form').html(div);
+        $('#habit-div').html(option);
+    }
+}
+
+function firstRecs() {
+    $.get('/get-recs.json', showRecs);
+}
+
+function updateRecs(evt) {
+    evt.preventDefault();
+    $.get('/get-recs.json', showRecs);
+}
+
+$('#get-recs').on('click', updateRecs);
+
+firstRecs()
+
+</script>
 
 {% endblock %}
 
-<script>
-
-function updateRecommendations() {
-    $.get('/get_recs')
-}
-
-// iterate over dictionary to get id(key) and vale of [title, description]
-var title = json[id][0]
-var description = json[id][1]
-var submit = "<input type='submit' value=" + title + " " + description + ">"
-
-$('#habit-div').append(submit)
-
-$('#get-recs').on(click, updateRecommendations)
-
-</script>

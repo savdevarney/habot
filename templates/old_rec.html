@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1> Recommended habits for you: </h1>
+
+<div id='habits-div'>
+    {% for habit in ranked_habits %}
+    <form action='/time' method='GET'>
+        <div id='habit-div'>
+            <input type="hidden" name="habit_id" value="{{ habit.create_habit_id }}">
+            <input type='submit', value="{{ habit.title }}: {{ habit.description }}">
+        </div>
+    </form>
+{% endfor %}
+</div>
+
+<a id="get-recs" href="/get-reccommendations">get more recommendations</a>
+<br>
+<a href="/habits">browse all habits</a>
+
+
+{% endblock %}
