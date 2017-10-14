@@ -149,7 +149,7 @@ def create_user():
     factor_scores = {}
     for factor in factors:
         score = request.args.get('{}'.format(factor.factor_id))
-        factor_scores[factor.factor_id] = int(score)
+        factor_scores[factor.factor_id] = int(score)    
 
     create_factor_scores(profile_id, factor_scores)
 
@@ -212,11 +212,7 @@ def show_recommended_habits():
     """ show habits recommended to user based on user profile and habit ratings 
     for that profile"""
 
-    user_id = session['user_id']
-
-    ranked_habits = get_recommendations(user_id)
-
-    return render_template('recommend.html', ranked_habits=ranked_habits)
+    return render_template('recommend.html')
 
 @app.route('/get-recs.json')
 def display_recommendations():
@@ -227,16 +223,18 @@ def display_recommendations():
 
     ranked_habits = get_recommendations(user_id)
     length = len(ranked_habits)
+    print "# of habits to recommend:" 
+    print length
     
     # utilize a counter to paginate recs by 4 habits
     if 'rec_index' in session:
 
         index = session['rec_index']
+        
         # if this request would provide the last recs in list, reset counter
-        if (length % 4 == 0) and (length == index):
+        if ((index == length) or (index == (length + (length % 4)))):
             session['rec_index'] = 4
-        elif index > (length - (length % 4)):
-            session['rec_index'] = 4
+
         # if not at end of list, increment the counter
         else:
             session['rec_index'] += 4

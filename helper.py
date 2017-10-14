@@ -138,13 +138,9 @@ def get_recommendations(user_id):
     
     # create a dictionary of all habits to hold rankings after they're calculated
     habit_fits = {}
-
-    # default list for when user scores highest possible on all profile scores
-    default = []
     
     for habit in habits: 
         habit_fits[habit.create_habit_id] = 0
-        default_habits.append(habit)
 
     # recommend habits by determining 'fit' of each habit for user (higher = better)
     for habit in habits:
@@ -177,6 +173,7 @@ def get_recommendations(user_id):
     # format: [(#, id), (#, id), (#, id)]
 
     if recommended_habits:
+        print "recommending personalized habits"
         ranked_habits = []
 
         for habit in recommended_habits:
@@ -187,8 +184,9 @@ def get_recommendations(user_id):
         return ranked_habits # a list of CreateHabit objects
 
     else:
+        print "recommending deafult habits"
+        return habits
 
-        return default
 
 def add_new_habit_return_id(user_id, create_habit_id, break_habit_id, utc_time, partner_id):
     """ sets any previous habits to current=False and adds new habit for user """
@@ -201,7 +199,7 @@ def add_new_habit_return_id(user_id, create_habit_id, break_habit_id, utc_time, 
             habit.current == False
             db.session.add(habit)
 
-    # store to user-habits table
+    # store to new habit to user-habits table
     user_habit = UserHabit(user_id=user_id, create_habit_id=create_habit_id, 
         break_habit_id=break_habit_id, current=True, active=True,
         utc_time=utc_time, partner_id=partner_id)
