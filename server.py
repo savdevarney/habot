@@ -20,13 +20,6 @@ app.jinja_env.undefined = StrictUndefined
 
 start_time = time.time()
 
-# account_sid = os.environ["TWILIO_ACCOUNT_SID"]
-# auth_token = os.environ["TWILIO_AUTH_TOKEN"]
-# messaging_service_sid = os.environ["TWILIO_MESSAGING_SERVICE_SID"]
-# twilio_from = os.environ["TWILIO_FROM_NUMBER"]
-# twilio_to = os.environ["TWILIO_TEST_TO_NUMBER"]
-# client = Client(account_sid, auth_token)
-
 
 @app.route('/', methods=['POST'])
 def track_success():
