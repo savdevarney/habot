@@ -9,14 +9,102 @@
 <p>total days: {{ stats["total_days"] }} </p>
 <p>longest streak: {{ stats["longest_streak"] }} </p>
 <p>7 days streaks: {{ stats["week_streaks"] }}
+<p>potential streak: {{ stats["potential_streak"] }}
 
 {% if last_factor_scores %}
     <p> your last scores: </p>
     <ul>
-    {% for score in last_factor_scores%}
+    {% for score in last_factor_scores %}
     <li> {{ score.factor.title }}: {{ score.score }}
     {% endfor %}
     </ul>
 {% endif %}
+
+<!-- D3 sample (meta and link go in head)-->
+<meta charset="utf-8" />
+  <title>D3.js Step by Step: Step 2 - A Nested Donut Chart</title>
+  <link data-require="normalize@*" data-semver="3.0.1" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css" />
+
+<div id="chart"></div>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.6/d3.min.js" data-semver="3.4.6" data-require="d3@*"></script>
+  <script>
+      (function(d3) {
+        'use strict';
+
+        var dataset1 = [
+          { label: '1-week', count: 1 }, 
+          { label: '2-week', count: 1 },
+          { label: '3-week', count: 1 },
+          { label: '4-week', count: 1 },
+          { label: '5-week', count: 1 },
+          { label: '6-week', count: 1 },
+        ];
+        
+        var dataset2 = [
+          { label: '1-day', count: 1 },
+          { label: '2-day', count: 1 },
+          { label: '3-day', count: 1 },
+          { label: '4-day', count: 1 },
+          { label: '5-day', count: 1 },
+          { label: '6-day', count: 1 },
+          { label: '7-day', count: 1 },
+        ];
+
+        var width = 200;
+        var height = 200;
+        var donutWidth = 10;
+        var radius1 = Math.min(width, height) / 2;
+        var radius2 = radius1 - donutWidth - 10;
+        
+        var color1 = d3.scale.ordinal()
+          .domain(['1-week', '2-week', '3-week', '4-week', '5-week', '6-week', '7-week'])
+          .range(['#DFF2B4', '#AEDFB6', '#79CBBC', '#41B2C2', '#228BBC', '#2258A5', '#20388F']);
+        var color2 = d3.scale.ordinal()
+          .domain(['1-day', '2-day', '3-day', '4-day', '5-day', '6-day', '7-day'])
+          .range(['#20388F', '#20388F', '#20388F', '#20388F', '#20388F', 'white', 'white']);
+
+        var svg = d3.select('#chart')
+          .append('svg')
+          .attr('width', width)
+          .attr('height', height);
+        var svg1 = svg.append('g')
+          .attr('transform', 'translate(' + (width / 2) + 
+            ',' + (height / 2) + ')');
+        var svg2 = svg.append('g')
+          .attr('transform', 'translate(' + (width / 2) + 
+            ',' + (height / 2) + ')');
+
+        var arc1 = d3.svg.arc()
+          .innerRadius(radius1 - donutWidth)  
+          .outerRadius(radius1);
+        var arc2 = d3.svg.arc()
+          .innerRadius(radius2 - donutWidth)  
+          .outerRadius(radius2);
+          
+        var pie = d3.layout.pie()
+          .value(function(d) { return d.count; })
+          .sort(null);
+
+        var path1 = svg1.selectAll('path')
+          .data(pie(dataset1))
+          .enter()
+          .append('path')
+          .attr('d', arc1)
+          .attr('stroke', 'light-gray')
+          .attr('fill', function(d, i) { 
+            return color1(i);
+          });
+        var path2 = svg2.selectAll('path')
+          .data(pie(dataset2))
+          .enter()
+          .append('path')
+          .attr('d', arc2)
+          .attr('stroke', 'light-gray')
+          .attr('fill', function(d, i) { 
+            return color2(i);
+          });
+
+      })(window.d3);
+    </script>
 
 {% endblock %}

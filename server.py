@@ -20,13 +20,6 @@ app.jinja_env.undefined = StrictUndefined
 
 start_time = time.time()
 
-# account_sid = os.environ["TWILIO_ACCOUNT_SID"]
-# auth_token = os.environ["TWILIO_AUTH_TOKEN"]
-# messaging_service_sid = os.environ["TWILIO_MESSAGING_SERVICE_SID"]
-# twilio_from = os.environ["TWILIO_FROM_NUMBER"]
-# twilio_to = os.environ["TWILIO_TEST_TO_NUMBER"]
-# client = Client(account_sid, auth_token)
-
 
 @app.route('/', methods=['POST'])
 def track_success():
@@ -149,7 +142,7 @@ def create_user():
     factor_scores = {}
     for factor in factors:
         score = request.args.get('{}'.format(factor.factor_id))
-        factor_scores[factor.factor_id] = int(score)
+        factor_scores[factor.factor_id] = int(score)    
 
     create_factor_scores(profile_id, factor_scores)
 
@@ -212,11 +205,7 @@ def show_recommended_habits():
     """ show habits recommended to user based on user profile and habit ratings 
     for that profile"""
 
-    user_id = session['user_id']
-
-    ranked_habits = get_recommendations(user_id)
-
-    return render_template('recommend.html', ranked_habits=ranked_habits)
+    return render_template('recommend.html')
 
 @app.route('/get-recs.json')
 def display_recommendations():
@@ -227,29 +216,31 @@ def display_recommendations():
 
     ranked_habits = get_recommendations(user_id)
     length = len(ranked_habits)
+    print "# of habits to recommend:" 
+    print length
     
     # utilize a counter to paginate recs by 4 habits
-    if 'rec_start' in session:
+    if 'rec_index' in session:
 
-        index = session['rec_start']
-        # reset the counter if this request would provide the last recs in list
-        if (length % 4 == 0) and (length == index):
-            session['rec_start'] = 4
-        elif index > (length - (length % 4)):
-            session['rec_start'] = 4
+        index = session['rec_index']
+        
+        # if this request would provide the last recs in list, reset counter
+        if ((index == length) or (index == (length + (length % 4)))):
+            session['rec_index'] = 4
+
         # if not at end of list, increment the counter
         else:
-            session['rec_start'] += 4
+            session['rec_index'] += 4
     else:
         # if it's the user's first request, create counter
-        session['rec_start'] = 4
+        session['rec_index'] = 8
         index = 4
 
     recs = ranked_habits[(index-4):index]
 
     recommendations = {}
     for rec in recs: 
-        recommendations[rec.create_habit_id] = [rec.title, rec.description]
+        recommendations[rec.create_habit_id] = { "title" : rec.title, "description" : rec.description }
 
     return jsonify(recommendations)
 
@@ -268,7 +259,7 @@ def define_habit_time():
 
     # # if 'break' in session, display diff text (re: replacement)
 
-    habit_id = request.args.get('habit_id')
+    habit_id = int(request.args.get('habit_id'))
     #get reomended hour for habit
     habit = CreateHabit.query.filter(CreateHabit.create_habit_id == habit_id).first()
     hour = habit.hour
@@ -287,14 +278,10 @@ def show_confirmation():
     user = User.query.filter(User.user_id == user_id).one()
     tz = user.tz
 
-    # create an arrow object, replace hour and timezone.
+    # create an arrow object, replace hour and timezone, convert to UTC and format for db
     t = arrow.now()
     time = t.replace(hour=int('{}'.format(hour)), tzinfo='{}'.format(tz))
-    
-    # convert to UTC
     utc_time = time.to('UTC')
-    
-    # format to store in db
     utc_time = utc_time.format('YYYY-MM-DD HH:mm:ss ZZ')
    
     create_habit_id = session['habit_id']
@@ -308,9 +295,11 @@ def show_confirmation():
     else:
         partner_id = session['partner_id']
 
-    add_new_habit(user_id, create_habit_id, break_habit_id, utc_time, partner_id)
+    habit_id = add_new_habit_return_id(user_id, create_habit_id, break_habit_id, utc_time, partner_id)
 
-    return render_template('confirm.html', user_habit=user_habit, hour=hour)
+    habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).first()
+
+    return render_template('confirm.html', habit=habit)
 
 
 

@@ -7,15 +7,20 @@
     {% for factor in factors %}
     <h3>{{ factor.title }}</h4>
     <p>{{ factor.description }}</p>
-    <select name="{{ factor.factor_id }}">
-        <option value="0">Very awesome</option>
-        <option value="1">Pretty ok</option>
-        <option value="2">Not great</option>
-    </select>
+        <fieldset id="{{ factor.factor_id }}">
+            <label class="radio-inline"><input type='radio' value="2" name="{{ factor.factor_id }}"/></label>
+            <label class="radio-inline"><input type='radio' value="1" name="{{ factor.factor_id }}" checked/></label>
+            <label class="radio-inline"><input type='radio' value="0" name="{{ factor.factor_id }}"/></label>
+        </fieldset>
     <br>
     {% endfor %}
-    <input type="submit", value="that sounds about right at the moment">
+    <input type="submit", value="feels about right at the mo">
 </form>
+
+
+<script>
+
+</script>
 
 
 {% endblock %}
