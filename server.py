@@ -244,6 +244,21 @@ def display_recommendations():
 
     return jsonify(recommendations)
 
+@app.route('/get-stats.json')
+def render_stats_graph():
+    """ populate dashboard graph with stats - an ajax call """
+
+    user_id = session['user_id']
+    
+    # calculate and render data about current habit
+    user_habit = UserHabit.query.filter(UserHabit.user_id == user_id, UserHabit.current == True).first()
+    
+    stats = get_stats(user_habit.habit_id)
+
+    graph_stats = graph_stats(stats)
+
+    return jsonify(stats)
+
 
 @app.route('/habits')
 def show_all_habits():

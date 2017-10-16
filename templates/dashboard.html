@@ -5,11 +5,12 @@
 <h2>You're doing a great job!</h2>
 
 <p>Your current habit: {{ user_habit.habit.title }} </p>
-<p>current streak: {{ stats["current_streak"] }} </p>
-<p>total days: {{ stats["total_days"] }} </p>
-<p>longest streak: {{ stats["longest_streak"] }} </p>
-<p>7 days streaks: {{ stats["week_streaks"] }}
-<p>potential streak: {{ stats["potential_streak"] }}
+<p>Total days: {{ stats["total_days"] }}
+<p>Current streak: {{ stats["current_streak"] }} </p>
+<p>Longest streak: {{ stats["longest_streak"] }} </p>
+<p>Total 3-day streaks: {{ stats["three_day_streaks"] }}
+<p>Current 3-day streak: {{ stats["current_three_day_streak"] }} </p>
+<p>Potential streak: {{ stats["potential_streak"] }} </p>
 
 {% if last_factor_scores %}
     <p> your last scores: </p>
@@ -21,6 +22,7 @@
 {% endif %}
 
 <!-- D3 sample (meta and link go in head)-->
+
 <meta charset="utf-8" />
   <title>D3.js Step by Step: Step 2 - A Nested Donut Chart</title>
   <link data-require="normalize@*" data-semver="3.0.1" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css" />
@@ -28,26 +30,30 @@
 <div id="chart"></div>
   <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.6/d3.min.js" data-semver="3.4.6" data-require="d3@*"></script>
   <script>
-      (function(d3) {
-        'use strict';
+
+  'use strict';
+
+    d3.json("/get-stats.json", function(data) {
+
+        var data = data
+        console.log(data)
+
+        (function(d3) {
 
         var dataset1 = [
-          { label: '1-week', count: 1 }, 
-          { label: '2-week', count: 1 },
-          { label: '3-week', count: 1 },
-          { label: '4-week', count: 1 },
-          { label: '5-week', count: 1 },
-          { label: '6-week', count: 1 },
+          { label: '1x3-day', count: 1 }, 
+          { label: '2x3-day', count: 1 },
+          { label: '3x3-day', count: 1 },
+          { label: '4x3-day', count: 1 },
+          { label: '5x3-day', count: 1 },
+          { label: '6x3-day', count: 1 },
+          { label: '7x3-day', count: 1 },
         ];
         
         var dataset2 = [
           { label: '1-day', count: 1 },
           { label: '2-day', count: 1 },
           { label: '3-day', count: 1 },
-          { label: '4-day', count: 1 },
-          { label: '5-day', count: 1 },
-          { label: '6-day', count: 1 },
-          { label: '7-day', count: 1 },
         ];
 
         var width = 200;
@@ -57,11 +63,11 @@
         var radius2 = radius1 - donutWidth - 10;
         
         var color1 = d3.scale.ordinal()
-          .domain(['1-week', '2-week', '3-week', '4-week', '5-week', '6-week', '7-week'])
+          .domain(['1x3-day', '2x3-day', '3x3-day', '4x3-day', '5x3-day', '6x3-day', '7x3-day'])
           .range(['#DFF2B4', '#AEDFB6', '#79CBBC', '#41B2C2', '#228BBC', '#2258A5', '#20388F']);
         var color2 = d3.scale.ordinal()
-          .domain(['1-day', '2-day', '3-day', '4-day', '5-day', '6-day', '7-day'])
-          .range(['#20388F', '#20388F', '#20388F', '#20388F', '#20388F', 'white', 'white']);
+          .domain(['1-day', '2-day', '3-day'])
+          .range(['#20388F', '#20388F', 'white']);
 
         var svg = d3.select('#chart')
           .append('svg')
@@ -105,6 +111,9 @@
           });
 
       })(window.d3);
+
+    }
+
     </script>
 
 {% endblock %}

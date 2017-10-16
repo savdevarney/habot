@@ -109,10 +109,10 @@ def load_streaks():
     for row in open("data/streaks.csv"):
         row = row.rstrip()
         fields = [field if field !='NULL' else None for field in row.split(",")]
-        streak_id, habit_id, days, start_id, end_id = fields
+        streak_id, habit_id, start_id, end_id = fields
 
         #create streak
-        streak = Streak(streak_id=streak_id, habit_id=habit_id, days=days, start_id=start_id, end_id=end_id)
+        streak = Streak(streak_id=streak_id, habit_id=habit_id, start_id=start_id, end_id=end_id)
 
         #add streak
         db.session.add(streak)

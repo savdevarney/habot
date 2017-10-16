@@ -99,8 +99,6 @@ def create_factor_scores(profile_id, factor_scores):
     """ creates a new record for every factor scored by user (passed through 
         in factor_scores dictionary """
 
-    print factor_scores
-
     for factor, score in factor_scores.items():
         new_rating = FactorScore(profile_id=profile_id, factor_id=factor, score=score)
         db.session.add(new_rating)
@@ -108,8 +106,8 @@ def create_factor_scores(profile_id, factor_scores):
 
 
 def get_last_factor_profile(user_id):
-    """ returns the last profile (set of factor ratings) for a given user_id 
-    in the format of a list of FactorRating objects """
+    """ returns the last profile (list of factor ratings as FactorRating objects) 
+    for a given user_id """
 
     last_profile = UserProfile.query.filter(UserProfile.user_id == user_id).order_by(UserProfile.date.desc()).first()
     if last_profile:
@@ -123,8 +121,8 @@ def get_last_factor_profile(user_id):
 # helper functions for making recommendations
 
 def get_recommendations(user_id):
-    """ returns a ranked list of recommended habits for the user as 
-    CreateHabit objects. """
+    """ returns a ranked list of recommended habits for the user as CreateHabit 
+    objects. """
 
     # create a dictionary of the latest factor scores from the most recent profile.
     last_factor_scores = get_last_factor_profile(user_id) 
@@ -280,20 +278,24 @@ def get_stats(habit_id):
     returns a dictionary of format:
 
         {
-        'total_days':6,
-        'current_streak':6,
-        'current_week_streak':6
-        'potential_streak': 7
-        'longest_streak': 6
-        'week_streaks': 0
+        'total_days': 10,
+        'current_streak': 6,
+        'potential_streak': 7,
+        'current_three_day_streak': 2
+        'three_day_streaks': 2,
+        'longest_streak': 6,
         }
 
         example message from bot:
-        (check if potential > current):
-            "You ready, Sav? Suceeding today will put you on a 7 day streak!
+        (check if potential > 3 and longest < potential):
+            "You ready, Sav? Suceeding today will give you a 7 day streak
+            overall and a new record!"
         
-        (upon success and if current == longest):
-            "Awesome job, Sav! You hit a new record streak: 6 days!"
+        (upon success check if current == longest):
+            "Awesome job, Sav! You hit a new record streak: 7 days!"
+
+        (check if potential < 3 and total < 21)
+            "You ready, Sav? 
 
         """
  
@@ -314,15 +316,15 @@ def get_stats(habit_id):
         last_success_time = last_success.time
         last_success_id = last_success.success_id
 
-        # iterate through all streaks to find longest_streak and current_streak (if day qualifies)
+        # iterate through all streaks to get streak stats:
         streaks = Streak.query.filter(Streak.habit_id == habit_id).all()
         
         stats['longest_streak'] = 0
-        stats['week_streaks'] = 0
-        
+        stats['three_day_streaks'] = 0
+
         for streak in streaks:
 
-            # calculate lengths of all streaks
+            # calculate lengths of streak
             streak_start = (arrow.get(streak.start_success.time)).to(tz)
             streak_end = (arrow.get(streak.end_success.time)).to(tz)
             streak_length = -((streak_start.date() - streak_end.date()).days)
@@ -331,9 +333,9 @@ def get_stats(habit_id):
             if streak_length > stats['longest_streak']:
                 stats['longest_streak'] = streak_length
 
-            # determine if it classifies as a week-long streak
-            if streak_length / 7 > 0:
-                stats['week_streaks'] += 1
+            # determine if it classifies as a three_day streak
+            if streak_length / 3 > 0:
+                stats['three_day_streaks'] += (streak_length / 3)
             
             # find the last streak
             if streak.end_id == last_success_id:
@@ -344,23 +346,50 @@ def get_stats(habit_id):
                     # if end of last streak == yesterday:
                     if dates_consecutive(last_success_time, current_time, tz):
                         stats['potential_streak'] = streak_length + 1
-                # if end of last streak != today or yesterday: 
+                # if end of last streak != today or yesterday:
                 else:
                     stats['current_streak'] = 0
-                    stats['potential_streak'] = 0
+                    stats['potential_streak'] = 1
 
-        # find the current_week_streak
-        stats['current_week_streak'] = stats['current_streak'] - (7 * stats['week_streaks'])
+        # find the current_three_day streak
+        if stats['current_streak'] >= 3:
+            stats['current_three_day_streak'] = stats['current_streak'] - (3 * stats['three_day_streaks'])
+        else:
+            stats['current_three_day_streak'] = stats ['current_streak']
     
     else:
         # if no successes ... 
         stats['longest_streak'] = 0
         stats['current_streak'] = 0
-        stats['week_streaks'] = 0
+        stats['three_day_streaks'] = 0
         stats['potential_streak'] = 1
-        stats['current_week_streak'] = 0
+        stats['current_three_day_streak'] = 0
 
     return stats
+
+def graph_stats(stats):
+    """ provides a json ready dictionary to send to d3 dashboard graph """
+
+    graph_stats = {}
+    num_streaks = stats['three_day_streaks']
+    num_days = stats['current_three_day_streak']
+
+    graph_stats['num_streaks'] = []
+    graph_stats['num_days'] = []
+
+    for i in range(1,num_streaks + 1):
+        new = {}
+        new['label'] = '{}x3-day'.format(i)
+        new['count'] = 1
+        graph_stats['num_streaks'].append(new)
+
+    for i in range(1,num_days + 1):
+        new = {}
+        new['label'] = '{}-day'.format(i)
+        new['count'] = 1
+        graph_stats['num_days'].append(new)
+
+    return graph_stats
 
 
 def process_success(mobile, time):

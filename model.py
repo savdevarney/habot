@@ -126,7 +126,6 @@ class Streak(db.Model):
 
     streak_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     habit_id = db.Column(db.Integer, db.ForeignKey('user_habits.habit_id'), nullable=False)
-    days = db.Column(db.Integer, nullable=False)
     start_id = db.Column(db.Integer, db.ForeignKey('successes.success_id'), nullable=False)
     end_id = db.Column(db.Integer, db.ForeignKey('successes.success_id'), nullable=False)
 
