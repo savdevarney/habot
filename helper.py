@@ -368,16 +368,23 @@ def get_stats(habit_id):
     return stats
 
 def get_graph_stats(stats):
-    """ provides a json ready dictionary to send to d3 dashboard graph """
+    """ provides a dictionary to jsonify in flask route that supports
+     d3 dashboard graph dynamic configuration """
 
     graph_stats = {}
     num_streaks = stats['three_day_streaks']
     num_days = stats['current_three_day_streak']
 
     graph_stats['num_streaks'] = []
+    graph_stats['num_streaks_colors_domain'] = []
+    graph_stats['num_streaks_colors_range'] = []
     graph_stats['num_day_colors'] = []
     graph_stats['num_day_strokes'] = []
+    graph_stats['num_streaks_stroke'] = []
 
+
+    # dictionary of color progression to reference. 
+    # outter circle (num_days) segments fill to color of the 'next' 3-day streak value
     colors = {  0 : 'white',     
                 1 : '#DFF2B4',
                 2 : '#AEDFB6',
@@ -389,13 +396,19 @@ def get_graph_stats(stats):
             }
     color = colors[num_streaks + 1]
 
-    # configure num segments and colors for outter circle
+    # configure num segments and colors for inner circle (num_streaks)
+
+
     if num_streaks == 0:
+    # scenario of 0x3-day streaks:
         new = {}
         new['label'] = '0x3-day'
         new['count'] = 1
         graph_stats['num_streaks'].append(new)
-    
+        graph_stats['num_streaks_colors_domain'].extend(['0x3-day'])
+        graph_stats['num_streaks_colors_range'].extend(['#FCFCFC'])
+        graph_stats['num_streaks_stroke'].extend(['#D8D8D8'])
+
     else:
 
         for i in range(1, num_streaks + 1):
@@ -403,25 +416,35 @@ def get_graph_stats(stats):
             new['label'] = '{}x3-day'.format(i)
             new['count'] = 1
             graph_stats['num_streaks'].append(new)
+        graph_stats['num_streaks_colors_domain'].extend(['1x3-day', '2x3-day', '3x3-day', '4x3-day', '5x3-day', '6x3-day', '7x3-day'])
+        graph_stats['num_streaks_colors_range'].extend(['#DFF2B4', '#AEDFB6', '#79CBBC', '#41B2C2', '#228BBC', '#2258A5', '#20388F'])
+        graph_stats['num_streaks_stroke'].extend(['transparent'])
 
-    # configure color and stroke for inner circle (3 segments)
+    # configure color and stroke for outter circle (num_days / 3 in 3-day streak)
     if num_days == 1:
         graph_stats['num_day_colors'].extend(
             ["{}".format(color), 'transparent', 'transparent'])
         graph_stats['num_day_strokes'].extend(
-            ["{}".format(color), "{}".format(color), 'transparent'])
+            ['transparent', 'transparent', 'transparent'])
 
     elif num_days == 2:
         graph_stats['num_day_colors'].extend(
             ["{}".format(color), "{}".format(color), 'transparent'])
         graph_stats['num_day_strokes'].extend(
-            ["{}".format(color), "{}".format(color), "{}".format(color)])
+            ['transparent', 'transparent', 'transparent'])
+
+    elif (num_days == 0) and (num_streaks == 0):
+    # scenario of no data:
+        graph_stats['num_day_colors'].extend(
+            ['#FCFCFC', '#FCFCFC', '#FCFCFC'])
+        graph_stats['num_day_strokes'].extend(
+            ['#D8D8D8', '#D8D8D8', '#D8D8D8'])
 
     elif num_days == 0:
         graph_stats['num_day_colors'].extend(
             ['transparent', 'transparent', 'transparent'])
         graph_stats['num_day_strokes'].extend(
-            ["{}".format(color), 'transparent', 'transparent'])
+            ['transparent', 'transparent', 'transparent'])
 
     return graph_stats
 
@@ -429,6 +452,7 @@ def get_graph_stats(stats):
 def process_success(mobile, time):
 
     # get User
+    
     user = User.query.filter(User.mobile == mobile).one()
     user_id = user.user_id
 

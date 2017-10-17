@@ -24,7 +24,7 @@
 <!-- D3 sample (meta and link go in head)-->
 
 <meta charset="utf-8" />
-  <title>D3.js Step by Step: Step 2 - A Nested Donut Chart</title>
+
   <link data-require="normalize@*" data-semver="3.0.1" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css" />
 
 <div id="chart"></div>
@@ -41,13 +41,13 @@
 
         (function(d3) {
 
-        var dataset1 = data['num_streaks']
-        
-        var dataset2 = [
+        var dataset1 = [
           { label: '1-day', count: 1 },
           { label: '2-day', count: 1 },
           { label: '3-day', count: 1 },
         ];
+        
+        var dataset2 = data['num_streaks']
 
         var width = 200;
         var height = 200;
@@ -56,12 +56,12 @@
         var radius2 = radius1 - donutWidth - 10;
         
         var color1 = d3.scale.ordinal()
-          .domain(['1x3-day', '2x3-day', '3x3-day', '4x3-day', '5x3-day', '6x3-day', '7x3-day'])
-          .range(['#DFF2B4', '#AEDFB6', '#79CBBC', '#41B2C2', '#228BBC', '#2258A5', '#20388F']);
-        
-        var color2 = d3.scale.ordinal()
           .domain(['1-day', '2-day', '3-day'])
           .range(data['num_day_colors']);
+        
+        var color2 = d3.scale.ordinal()
+          .domain(data['num_streaks_colors_domain'])
+          .range(data['num_streaks_colors_range']);
 
         var color3 = d3.scale.ordinal()
           .domain(['1-day', '2-day', '3-day'])
@@ -94,18 +94,21 @@
           .enter()
           .append('path')
           .attr('d', arc1)
-          .attr('stroke', 'white')
+          .attr('stroke', function(d, i) {
+            return color3(i);
+          })
+          .attr('stroke-dasharray', "5,5")
           .attr('fill', function(d, i) { 
             return color1(i);
           });
+
         var path2 = svg2.selectAll('path')
           .data(pie(dataset2))
           .enter()
           .append('path')
           .attr('d', arc2)
-          .attr('stroke', function(d, i) {
-            return color3(i);
-          })
+          .attr('stroke', data['num_streaks_stroke'][0])
+          .attr('stroke-dasharray', "5, 5")
           .attr('fill', function(d, i) { 
             return color2(i);
           });

@@ -3,11 +3,110 @@
 <head>
     <title>habot</title>
     <script src="https://code.jquery.com/jquery.js"></script>
+
     <link 
     rel="stylesheet" 
     href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
     integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
     crossorigin="anonymous">
+
+    <style>
+
+.custom-radios div {
+  display: inline-block;
+}
+.custom-radios input[type="radio"] {
+  display: none;
+}
+.custom-radios input[type="radio"] + label {
+  color: #333;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+.custom-radios input[type="radio"] + label span {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  margin: -1px 4px 0 0;
+  vertical-align: middle;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 1px solid #ffffff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.33);
+  background-repeat: no-repeat;
+  background-position: center;
+  text-align: center;
+  line-height: 44px;
+}
+.custom-radios input[type="radio"] + label span img {
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+.custom-radios input[type="radio"]#color-green-1 + label span {
+  background-color: #C4DB81;
+}
+.custom-radios input[type="radio"]#color-yellow-1 + label span {
+  background-color: #FDCF49;
+}
+.custom-radios input[type="radio"]#color-red-1 + label span {
+  background-color: #EF6752;
+}
+
+.custom-radios input[type="radio"]#color-green-2 + label span {
+  background-color: #C4DB81;
+}
+.custom-radios input[type="radio"]#color-yellow-2 + label span {
+  background-color: #FDCF49;
+}
+.custom-radios input[type="radio"]#color-red-2 + label span {
+  background-color: #EF6752;
+}
+
+.custom-radios input[type="radio"]#color-green-3 + label span {
+  background-color: #C4DB81;
+}
+.custom-radios input[type="radio"]#color-yellow-3 + label span {
+  background-color: #FDCF49;
+}
+.custom-radios input[type="radio"]#color-red-3 + label span {
+  background-color: #EF6752;
+}
+
+.custom-radios input[type="radio"]#color-green-4 + label span {
+  background-color: #C4DB81;
+}
+.custom-radios input[type="radio"]#color-yellow-4 + label span {
+  background-color: #FDCF49;
+}
+.custom-radios input[type="radio"]#color-red-4 + label span {
+  background-color: #EF6752;
+}
+
+.custom-radios input[type="radio"]#color-green-5 + label span {
+  background-color: #C4DB81;
+}
+.custom-radios input[type="radio"]#color-yellow-5 + label span {
+  background-color: #FDCF49;
+}
+.custom-radios input[type="radio"]#color-red-5 + label span {
+  background-color: #EF6752;
+}
+
+.custom-radios input[type="radio"]#color-green-6 + label span {
+  background-color: #C4DB81;
+}
+.custom-radios input[type="radio"]#color-yellow-6 + label span {
+  background-color: #FDCF49;
+}
+.custom-radios input[type="radio"]#color-red-6 + label span {
+  background-color: #EF6752;
+}
+
+.custom-radios input[type="radio"]:checked + label span img {
+  opacity: 1;
+}
+
+    </style>
 
 </head>
 

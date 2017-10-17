@@ -1,26 +1,231 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2> tell us how you're doing right now </h2>
+<h2> Tell me how you're doing right now </h2>
 
 <form action='/signup' method='GET'>
-    {% for factor in factors %}
-    <h3>{{ factor.title }}</h4>
-    <p>{{ factor.description }}</p>
-        <fieldset id="{{ factor.factor_id }}">
-            <label class="radio-inline"><input type='radio' value="2" name="{{ factor.factor_id }}"/></label>
-            <label class="radio-inline"><input type='radio' value="1" name="{{ factor.factor_id }}" checked/></label>
-            <label class="radio-inline"><input type='radio' value="0" name="{{ factor.factor_id }}"/></label>
-        </fieldset>
-    <br>
-    {% endfor %}
-    <input type="submit", value="feels about right at the mo">
+
+    <h3>Mind</h4>
+    <p>Your overall mood and emotional health.</p>
+
+    <fieldset id="1">
+
+        <div class="custom-radios">
+          <div>
+            <input type="radio" id="color-red-1" name="1" value="2">
+            <label for="color-red-1">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+          
+          <div>
+            <input type="radio" id="color-yellow-1" name="1" value="1" checked>
+            <label for="color-yellow-1">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+
+          <div>
+            <input type="radio" id="color-green-1" name="1" value="0">
+            <label for="color-green-1">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+        </div>
+
+    </fieldset>
+
+    <h3>Sleep</h4>
+    <p>The quality and quantity of your sleep</p>
+
+    <fieldset id="2">
+
+        <div class="custom-radios">
+          <div>
+            <input type="radio" id="color-red-2" name="2" value="2">
+            <label for="color-red-2">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+          
+          <div>
+            <input type="radio" id="color-yellow-2" name="2" value="1" checked>
+            <label for="color-yellow-2">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+
+          <div>
+            <input type="radio" id="color-green-2" name="2" value="0">
+            <label for="color-green-2">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+        </div>
+
+    </fieldset>
+
+
+    <h3>Relationships</h4>
+    <p>The health of relationships important to you.</p>
+
+    <fieldset id="3">
+
+        <div class="custom-radios">
+          <div>
+            <input type="radio" id="color-red-3" name="3" value="2">
+            <label for="color-red-3">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+          
+          <div>
+            <input type="radio" id="color-yellow-3" name="3" value="1" checked>
+            <label for="color-yellow-3">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+
+          <div>
+            <input type="radio" id="color-green-3" name="3" value="0">
+            <label for="color-green-3">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+        </div>
+
+    </fieldset>
+
+
+    <h3>Performance</h4>
+    <p>Your cognitive focus and decision making.</p>
+
+    <fieldset id="4">
+
+        <div class="custom-radios">
+          <div>
+            <input type="radio" id="color-red-4" name="4" value="2">
+            <label for="color-red-4">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+          
+          <div>
+            <input type="radio" id="color-yellow-4" name="4" value="1" checked>
+            <label for="color-yellow-4">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+
+          <div>
+            <input type="radio" id="color-green-4" name="4" value="0">
+            <label for="color-green-4">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+        </div>
+
+    </fieldset>
+
+    <h3>Movement</h4>
+    <p>The amount of exercises you are getting.</p>
+
+    <fieldset id="5">
+
+        <div class="custom-radios">
+          <div>
+            <input type="radio" id="color-red-5" name="5" value="2">
+            <label for="color-red-5">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+          
+          <div>
+            <input type="radio" id="color-yellow-5" name="5" value="1" checked>
+            <label for="color-yellow-5">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+
+          <div>
+            <input type="radio" id="color-green-5" name="5" value="0">
+            <label for="color-green-5">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+        </div>
+
+    </fieldset>
+
+    <h3>Nutrition</h4>
+    <p>Your overall nutrition and hydration. </p>
+
+    <fieldset id="6">
+
+        <div class="custom-radios">
+          <div>
+            <input type="radio" id="color-red-6" name="6" value="2">
+            <label for="color-red-6">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+          
+          <div>
+            <input type="radio" id="color-yellow-6" name="6" value="1" checked>
+            <label for="color-yellow-6">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+
+          <div>
+            <input type="radio" id="color-green-6" name="6" value="0">
+            <label for="color-green-6">
+              <span>
+                <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/242518/check-icn.svg" alt="Checked Icon" />
+              </span>
+            </label>
+          </div>
+        </div>
+
+    </fieldset>
+
+<input type="submit", value="feels about right at the mo">
+
 </form>
-
-
-<script>
-
-</script>
 
 
 {% endblock %}
