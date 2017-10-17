@@ -255,9 +255,9 @@ def render_stats_graph():
     
     stats = get_stats(user_habit.habit_id)
 
-    graph_stats = graph_stats(stats)
+    graph_stats = get_graph_stats(stats)
 
-    return jsonify(stats)
+    return jsonify(graph_stats)
 
 
 @app.route('/habits')

@@ -351,7 +351,7 @@ def get_stats(habit_id):
                     stats['current_streak'] = 0
                     stats['potential_streak'] = 1
 
-        # find the current_three_day streak
+        # find the current_three_day streak (should only be 0, 1 or 2) ...
         if stats['current_streak'] >= 3:
             stats['current_three_day_streak'] = stats['current_streak'] - (3 * stats['three_day_streaks'])
         else:
@@ -367,7 +367,7 @@ def get_stats(habit_id):
 
     return stats
 
-def graph_stats(stats):
+def get_graph_stats(stats):
     """ provides a json ready dictionary to send to d3 dashboard graph """
 
     graph_stats = {}
@@ -375,19 +375,53 @@ def graph_stats(stats):
     num_days = stats['current_three_day_streak']
 
     graph_stats['num_streaks'] = []
-    graph_stats['num_days'] = []
+    graph_stats['num_day_colors'] = []
+    graph_stats['num_day_strokes'] = []
 
-    for i in range(1,num_streaks + 1):
+    colors = {  0 : 'white',     
+                1 : '#DFF2B4',
+                2 : '#AEDFB6',
+                3 : '#79CBBC',
+                4 : '#41B2C2',
+                5 : '#228BBC',
+                6 : '#2258A5',
+                7 : '#20388F'
+            }
+    color = colors[num_streaks + 1]
+
+    # configure num segments and colors for outter circle
+    if num_streaks == 0:
         new = {}
-        new['label'] = '{}x3-day'.format(i)
+        new['label'] = '0x3-day'
         new['count'] = 1
         graph_stats['num_streaks'].append(new)
+    
+    else:
 
-    for i in range(1,num_days + 1):
-        new = {}
-        new['label'] = '{}-day'.format(i)
-        new['count'] = 1
-        graph_stats['num_days'].append(new)
+        for i in range(1, num_streaks + 1):
+            new = {}
+            new['label'] = '{}x3-day'.format(i)
+            new['count'] = 1
+            graph_stats['num_streaks'].append(new)
+
+    # configure color and stroke for inner circle (3 segments)
+    if num_days == 1:
+        graph_stats['num_day_colors'].extend(
+            ["{}".format(color), 'transparent', 'transparent'])
+        graph_stats['num_day_strokes'].extend(
+            ["{}".format(color), "{}".format(color), 'transparent'])
+
+    elif num_days == 2:
+        graph_stats['num_day_colors'].extend(
+            ["{}".format(color), "{}".format(color), 'transparent'])
+        graph_stats['num_day_strokes'].extend(
+            ["{}".format(color), "{}".format(color), "{}".format(color)])
+
+    elif num_days == 0:
+        graph_stats['num_day_colors'].extend(
+            ['transparent', 'transparent', 'transparent'])
+        graph_stats['num_day_strokes'].extend(
+            ["{}".format(color), 'transparent', 'transparent'])
 
     return graph_stats
 

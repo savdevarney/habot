@@ -33,22 +33,15 @@
 
   'use strict';
 
-    d3.json("/get-stats.json", function(data) {
+    d3.json("/get-stats.json", function(json) {
 
-        var data = data
-        console.log(data)
+        var data = json
+        console.log(data);
+        console.log(data['num_streaks']);
 
         (function(d3) {
 
-        var dataset1 = [
-          { label: '1x3-day', count: 1 }, 
-          { label: '2x3-day', count: 1 },
-          { label: '3x3-day', count: 1 },
-          { label: '4x3-day', count: 1 },
-          { label: '5x3-day', count: 1 },
-          { label: '6x3-day', count: 1 },
-          { label: '7x3-day', count: 1 },
-        ];
+        var dataset1 = data['num_streaks']
         
         var dataset2 = [
           { label: '1-day', count: 1 },
@@ -65,9 +58,14 @@
         var color1 = d3.scale.ordinal()
           .domain(['1x3-day', '2x3-day', '3x3-day', '4x3-day', '5x3-day', '6x3-day', '7x3-day'])
           .range(['#DFF2B4', '#AEDFB6', '#79CBBC', '#41B2C2', '#228BBC', '#2258A5', '#20388F']);
+        
         var color2 = d3.scale.ordinal()
           .domain(['1-day', '2-day', '3-day'])
-          .range(['#20388F', '#20388F', 'white']);
+          .range(data['num_day_colors']);
+
+        var color3 = d3.scale.ordinal()
+          .domain(['1-day', '2-day', '3-day'])
+          .range(data['num_day_strokes']);
 
         var svg = d3.select('#chart')
           .append('svg')
@@ -96,7 +94,7 @@
           .enter()
           .append('path')
           .attr('d', arc1)
-          .attr('stroke', 'light-gray')
+          .attr('stroke', 'white')
           .attr('fill', function(d, i) { 
             return color1(i);
           });
@@ -105,14 +103,16 @@
           .enter()
           .append('path')
           .attr('d', arc2)
-          .attr('stroke', 'light-gray')
+          .attr('stroke', function(d, i) {
+            return color3(i);
+          })
           .attr('fill', function(d, i) { 
             return color2(i);
           });
 
       })(window.d3);
 
-    }
+    })
 
     </script>
 
