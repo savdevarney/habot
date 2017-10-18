@@ -398,7 +398,6 @@ def get_graph_stats(stats):
 
     # configure num segments and colors for inner circle (num_streaks)
 
-
     if num_streaks == 0:
     # scenario of 0x3-day streaks:
         new = {}
@@ -425,13 +424,13 @@ def get_graph_stats(stats):
         graph_stats['num_day_colors'].extend(
             ["{}".format(color), 'transparent', 'transparent'])
         graph_stats['num_day_strokes'].extend(
-            ['transparent', 'transparent', 'transparent'])
+            ['transparent', '#FCFCFC', '#FCFCFC'])
 
     elif num_days == 2:
         graph_stats['num_day_colors'].extend(
             ["{}".format(color), "{}".format(color), 'transparent'])
         graph_stats['num_day_strokes'].extend(
-            ['transparent', 'transparent', 'transparent'])
+            ['transparent', 'transparent', '#FCFCFC'])
 
     elif (num_days == 0) and (num_streaks == 0):
     # scenario of no data:
@@ -444,16 +443,17 @@ def get_graph_stats(stats):
         graph_stats['num_day_colors'].extend(
             ['transparent', 'transparent', 'transparent'])
         graph_stats['num_day_strokes'].extend(
-            ['transparent', 'transparent', 'transparent'])
+            ['#FCFCFC', 'transparent', 'transparent'])
 
+    print stats['current_three_day_streak']
     return graph_stats
 
 
-def process_success(mobile, time):
+def process_success(mobile, success_time):
 
-    # get User
-    
+    # get User and user's timezone
     user = User.query.filter(User.mobile == mobile).one()
+    tz = user.tz
     user_id = user.user_id
 
     # get user's current habit id
@@ -462,7 +462,7 @@ def process_success(mobile, time):
 
     last_time = (find_last_success(habit_id)).time
 
-    if dates_same(time, last_time, tz):
+    if dates_same(success_time, last_time, tz):
         print "user has already succeeded on this day"
 
     else:
@@ -471,12 +471,12 @@ def process_success(mobile, time):
 
         if streak_id == None:
             # create success and create sterak
-            success_id = add_success_get_id(habit_id, mobile, time)
+            success_id = add_success_get_id(habit_id, mobile, success_time)
             streak_update(habit_id, streak_id, success_id)
             print "new streak added"
         else:
             # create success and update streak
-            success_id = add_success_get_id(habit_id, mobile, time)
+            success_id = add_success_get_id(habit_id, mobile, success_time)
             streak_update(habit_id, streak_id, success_id)
             print "existing streak updated"
 
@@ -491,6 +491,7 @@ def add_success_get_id(habit_id, mobile, success_time):
     db.session.commit
     last_success = find_last_success(habit_id)
     return last_success.success_id
+
 
 def find_last_success(habit_id):
     # can also do this by user_id ... order_by success_id
@@ -510,7 +511,7 @@ def get_streak_id(habit_id, success_time):
     last_success = find_last_success(habit_id)
 
     if last_success:
-        last_sucess_id = last_success.success_id
+        last_success_id = last_success.success_id
         last_success_time = arrow.get(last_success.time)
         last_success_local = last_success_time.to(tz)
                 
@@ -526,6 +527,9 @@ def get_streak_id(habit_id, success_time):
 def streak_update(habit_id, streak_id, success_id):
     """ creates or updates a streak """
 
+    print "trying to update streak"
+    print "values: habit_id: {}, streak_id: {}, success_id: {}".format(habit_id, streak_id, success_id)
+
     if streak_id is None:
         # create new streak
         streak = Streak(habit_id=habit_id, start_id=success_id, end_id=success_id)
@@ -533,7 +537,7 @@ def streak_update(habit_id, streak_id, success_id):
     else:
         # update existing streak
         streak = Streak.query.filter(Streak.streak_id == streak_id).one()
-        streak.end_success = success_id
+        streak.end_id = success_id
 
     db.session.add(streak)
     db.session.commit()
@@ -542,10 +546,12 @@ def streak_update(habit_id, streak_id, success_id):
 def dates_same(first_datetime, second_datetime, tz):
     """ checks if two date are the same.  Returns True if so and False if not """
 
-    first_datetime = arrow.get(first_datetime)
-    second_datetime = arrow.get(second_datetime)
+    print first_datetime
+    print second_datetime
+    first = arrow.get(first_datetime)
+    second = arrow.get(second_datetime)
 
-    if (first_datetime.to(tz)).date() == (second_datetime.to(tz)).date():
+    if (first.to(tz)).date() == (second.to(tz)).date():
         return True
     else:
         return False
@@ -553,10 +559,10 @@ def dates_same(first_datetime, second_datetime, tz):
 def dates_consecutive(first_datetime, second_datetime, tz):
     """ checks if two date are consecutive.  Returns True if so and False if not """
 
-    first_datetime = arrow.get(first_datetime)
-    second_datetime = arrow.get(second_datetime)
+    first = arrow.get(first_datetime)
+    second = arrow.get(second_datetime)
 
-    diff = (first_datetime.to(tz)).date() - (second_datetime.to(tz)).date()
+    diff = (first.to(tz)).date() - (second.to(tz)).date()
     
     if diff.days == -1:
         return True
@@ -566,11 +572,11 @@ def dates_consecutive(first_datetime, second_datetime, tz):
 def dates_same_or_consecutive(first_datetime, second_datetime, tz):
     """ checks if two dates are the same or consecutive"""
 
-    first_datetime = arrow.get(first_datetime)
-    second_datetime = arrow.get(second_datetime)
+    first = arrow.get(first_datetime)
+    second = arrow.get(second_datetime)
 
-    if (dates_same(first_datetime, second_datetime, tz) 
-        or dates_consecutive(first_datetime, second_datetime, tz)):
+    if (dates_same(first, second, tz) 
+        or dates_consecutive(first, second, tz)):
         return True
     else:
         return False

@@ -237,6 +237,8 @@ if __name__ == "__main__":
     load_user_habits()
     load_successes()
     load_streaks()
+
     set_val_user_id()
     set_val_success_id()
     set_val_habit_id()
+    set_val_streak_id()

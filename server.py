@@ -6,6 +6,7 @@ import schedule
 import time
 import datetime
 import arrow
+import phonenumbers
 from threading import Thread
 from helper import *
 from model import (connect_to_db, db, User, CreateHabit, UserHabit, Success,
@@ -32,12 +33,15 @@ def track_success():
     print "json received"
     print success_dict
 
-    # extract user mobile - ex: +18028253270
-    mobile = success_dict['originalRequest']['data']['From']
+    # extract user mobile - ex: +18028253270 and format it for lookup in db
+    mobile_unprocessed = success_dict['originalRequest']['data']['From']
+    country_code = success_dict['originalRequest']['data']['FromCountry']
+    mobile = format_mobile(mobile_unprocessed, country_code)
     
     # extract time (time API.ai agent tracks success) - ex: 2017-10-01T15:40:08.959Z
     success_time = arrow.get(success_dict['timestamp'])
     
+    # lodge success
     process_success(mobile, success_time)
    
     return 'JSON posted'
@@ -123,8 +127,9 @@ def log_in_user():
 def create_user():
     """creates user"""
 
+    country_code = session['country_code']
     tz = session['tz']
-    mobile = session['mobile']
+    mobile = format_mobile(session['mobile'], country_code)
     name = session['name']
 
     # create user and add user_id to session

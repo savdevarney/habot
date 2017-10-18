@@ -122,7 +122,7 @@ class Success(db.Model):
 class Streak(db.Model):
     """stores information about streaks"""
 
-    ___tablename__ = "streaks"
+    __tablename__ = "streaks"
 
     streak_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     habit_id = db.Column(db.Integer, db.ForeignKey('user_habits.habit_id'), nullable=False)
