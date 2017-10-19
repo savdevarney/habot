@@ -55,9 +55,9 @@ def send_welcome_msg(user_id):
         to=mobile,
         from_=twilio_from,
         body="Hi, {}! HaBot here. I feel honored you've choosen me to help you form new habits. \
-    You can habituate something new in about ~ 21 days of consistent effort. \
-    That's why I help you track your 'streaks' or consecutive days that you're successful. \
-    21 days sounds like a lot but just think of it as 7 three-day-streaks :) \
+    You can create a new habit with ~ 21 days of consistent effort.\
+    That's why I help you track your 'streaks' or consecutive days that you're successful.\
+    21 days may sound like a lot but just think of it as 7 three-day-streaks :)\
     I can't wait to see what you habituate!".format(name))
 
     print "welcome message sent!"
@@ -95,7 +95,7 @@ def send_habit_intro_msg(user_id):
 
     reminder = None
     if len(habits) == 1:
-        reminder = "Whenever you're successful, tell me and I'll track it for you.\
+        reminder = "Let me know when you're successful and I'll track your progress.\
     To help me recognize your success, put a # in front of your msg like this:\
     '#I did it, haBot!'' or '#yes!"
     
@@ -106,7 +106,7 @@ def send_habit_intro_msg(user_id):
         messaging_service_sid=messaging_service_sid,
         to=mobile,
         from_=twilio_from,
-        body="I see you've committed to {}, what a wonderful thing to habituate in your life, {}! \
+        body="I see you've committed to {}, what a wonderful thing to habituate in your life, {}!\
         Every day at {} I'll send you a reminder. {}".format(habit_title, name, habit_hour, reminder))
 
     print "habit_intro_msg sent"
@@ -188,12 +188,13 @@ def congrats_msg(user_id):
     HaBot """
 
     habit_id = get_current_habit_id(user_id)
+    name = (get_user(habit_id)).name
     stats = get_stats(habit_id)
     
     three_day_streaks = stats['three_day_streaks']
     current_three_day = stats['current_three_day_streak']
 
-    confirm_msg = "I've tracked that for you."
+    confirm_msg = "I've tracked that for you, {}. ".format(name)
         
     if current_three_day == 0:
         if three_day_streaks == 1:
@@ -202,12 +203,12 @@ def congrats_msg(user_id):
             stats_msg = "That's a new three-day-streak! {} in total now!".format(three_day_streaks)
     elif current_three_day == 1:
         if three_day_streaks == 0:
-            stats_msg = "You're on your way to your first three-day-streak!"
+            stats_msg = "Great job! You're on your way to your first three-day-streak! I'll check back in tomorrow."
         else:
             stats_msg = "You're on your way to your next three-day-streak!"
     elif current_three_day == 2:
         if three_day_streaks == 0:
-            stats_msg = "You're one success away from a new three day streak!"
+            stats_msg = "You're one success away from a new three-day-streak!"
         else:
             stats_msg = "You're one success away from your next three-day-streak.\
             Make it {} in total!".format(three_day_streaks + 1)
@@ -675,7 +676,7 @@ def process_success(user_id, success_time):
     if last_success:
         last_time = last_success.time
         if dates_same(success_time, last_time, tz):
-            print "user has already succeeded on this day"
+            return None
 
     else:
         # determine if streak
@@ -771,6 +772,13 @@ def get_current_habit_id(user_id):
     habit = UserHabit.query.filter(UserHabit.current == True, UserHabit.user_id == user_id).one()
     habit_id = habit.habit_id
     return habit_id
+
+def get_user(habit_id):
+    """ returns the User object for any habit_id """
+
+    habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).one() 
+    user = habit.user
+    return user
 
 
 def dates_same(first_datetime, second_datetime, tz):

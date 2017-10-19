@@ -5,7 +5,7 @@
 
 
 {% for timezone in timezones %}
-<form action='/factors' method='GET'>
+<form action='/name' method='GET'>
     <input type="hidden" name="tz" value="{{ timezone }}">
     <input type='submit', value="{{ timezone }}">
 </form>

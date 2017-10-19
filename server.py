@@ -44,6 +44,8 @@ def track_success():
     # lodge success
     user_id = get_user_id(mobile)
     process_success(user_id, success_time)
+    if not process_success:
+        msg ="I've already tracked a success for you today, but I'm thrilled to hear you were successful again today. Keep up the great work."
     msg = congrats_msg(user_id)
 
     resp = { "Content-type" : "application/json", 
@@ -127,7 +129,7 @@ def log_in_user():
         
         else:
             #redirect to onboarding flow
-            return redirect('/name')
+            return redirect('/timezone')
     
     # if incorrect code:
     else:
@@ -194,6 +196,9 @@ def show_dashboard():
 def choose_name():
     """ onboarding, step 1 - identify name """
 
+    tz = request.args.get('tz')
+    session['tz'] = tz
+
     return render_template('name.html')
     # form to collect name --> send user to factors, but for now --> /habit
 
@@ -201,9 +206,10 @@ def choose_name():
 @app.route('/timezone', methods=['GET'])
 def choose_timezone():
     """ onboarding, step 2 - identify timezone """
+    
+    country_code = session['country_code']
+    tz = session['tz']
 
-    name = request.args.get('name')
-    session['name'] = name
     country_code = session['country_code']
     
     timezones = get_country_timezones(country_code)
@@ -215,8 +221,8 @@ def choose_timezone():
 def rate_factors():
     """ onboarding, step 3 - identify factors """
 
-    tz = request.args.get('tz')
-    session['tz'] = tz
+    name = request.args.get('name')
+    session['name'] = name
 
     factors = Factor.query.all()
 
@@ -258,6 +264,9 @@ def display_recommendations():
         # if it's the user's first request, create counter
         session['rec_index'] = 8
         index = 4
+
+    print "rec_index: {}".format(session['rec_index'])
+    print "index: {}".format(session['rec_index'])
 
     recs = ranked_habits[(index-4):index]
 
