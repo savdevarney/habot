@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>Which habit?</h1>
+<h2>Which habit would you like to work on?</h2>
 
 {% for habit in habits %}
 <form action='/time' method='GET'>
 <div>
     <input type="hidden" name="habit_id" value="{{ habit.create_habit_id }}">
-    <input type='submit', value="{{ habit.title }}: {{ habit.description }}">
+    <input class="habit" type='submit', value="{{ habit.title }}: {{ habit.description }}">
 </div>
 </form>
 {% endfor %}

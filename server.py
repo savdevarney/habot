@@ -46,13 +46,12 @@ def track_success():
     process_success(user_id, success_time)
     msg = congrats_msg(user_id)
 
-    resp = { "Content-type" : "application/json", "body" :
-            {  "speech": msg,
-                "displayText": msg, 
-                "contextOut":[],
-                "source": "haBot app"
-                }
-            }
+    resp = { "Content-type" : "application/json", 
+    "speech": msg, 
+    "displayText": msg,
+    "data": {},
+    "contextOut":[],
+    "source": "haBot app"}
 
     response = jsonify(resp)
 
@@ -60,9 +59,9 @@ def track_success():
    
     return response
 
-        # logic to determine response 
+        # logic to determine response
 
-        # response = 
+        # response =
         # Headers:
         # Content-type: application/json
         # Body:

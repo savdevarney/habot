@@ -532,7 +532,10 @@ def get_stats(habit_id):
             # calculate lengths of streak
             streak_start = (arrow.get(streak.start_success.time)).to(tz)
             streak_end = (arrow.get(streak.end_success.time)).to(tz)
-            streak_length = -((streak_start.date() - streak_end.date()).days)
+            if dates_same(streak_start, streak_end, tz):
+                streak_length = 1
+            else: 
+                streak_length = -((streak_start.date() - streak_end.date()).days)
             
             # determine if it's the longest streak
             if streak_length > stats['longest_streak']:
@@ -545,8 +548,9 @@ def get_stats(habit_id):
       # NOT UPDATING IF USER'S FIRST SUCCESS IS SAME DAY AS CREATE DATE (streak_lenghth = 0)      
             # find the last streak
             if streak.end_id == last_success_id:
-                # if end of last streak == today or yesterday:
-                if dates_same_or_consecutive(last_success_time, current_time, tz):
+                # if end of last streak == today or yesterday
+                # OR if end of last streak AND habit creation date are the same
+                if ((dates_same_or_consecutive(last_success_time, current_time, tz)) or (dates_same(habit.utc_time, last_success_time, tz))):
                     stats['current_streak'] = streak_length
                     stats['potential_streak'] = streak_length
                     # if end of last streak == yesterday:

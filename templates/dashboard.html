@@ -1,15 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>Hi, {{ user_habit.user.name }}
+<h1>Hi, {{ user_habit.user.name }}!</h1>
 <h2>You're doing a great job!</h2>
 
-<p>Your current habit: {{ user_habit.habit.title }} </p>
+<h3>Your habit: {{ user_habit.habit.title }} </h3>
+<div id="chart"></div>
+<p>Total 3-day streaks: {{ stats["three_day_streaks"] }} </p>
+<p>Current 3-day streak: {{ stats["current_three_day_streak"] }} </p>
+<br>
+<br>
+
 <p>Total days: {{ stats["total_days"] }}
 <p>Current streak: {{ stats["current_streak"] }} </p>
 <p>Longest streak: {{ stats["longest_streak"] }} </p>
-<p>Total 3-day streaks: {{ stats["three_day_streaks"] }}
-<p>Current 3-day streak: {{ stats["current_three_day_streak"] }} </p>
 <p>Potential streak: {{ stats["potential_streak"] }} </p>
 
 {% if last_factor_scores %}
@@ -26,8 +30,6 @@
 <meta charset="utf-8" />
 
   <link data-require="normalize@*" data-semver="3.0.1" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css" />
-
-<div id="chart"></div>
   <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.6/d3.min.js" data-semver="3.4.6" data-require="d3@*"></script>
   <script>
 

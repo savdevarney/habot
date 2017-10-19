@@ -1,8 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h1>Excellent! {{ habit.user.name }} You're confirmed!</h1>
-<p>your mobile: {{ habit.user.mobile }} <p>
+<h2>Let's do this, {{ habit.user.name }}!</h2>
+<h2>I've already sent you a few messages to your mobile phone. <br>
+    I'll send you your first reminder at the time you selected for you to track your success</h2>
+<h1>In the meantime, check out this cool <a href="/dashboard">dashboard</a> that helps you track your streaks</h1>
+<h1>And you can text me at anytime just to let me know how you are - I can't wait to hear from you!</h1>
+
+<p>debugging data</p>
+<p>your mobile: {{ habit.user.mobile }} </p>
 <p>habit_id: {{ habit.habit.create_habit_id }} </p>
 <p>your habit: {{ habit.habit.title }} </p>
 <p> timezone: {{ habit.user.tz }} </p>
@@ -10,6 +16,6 @@
 <p> for our purposes, your time is saved in UTC </p>
 <p> utc hour: {{ habit.utc_time }} 
 
-<a href="/dashboard">Dashboard</a>
+
 
 {% endblock %}
