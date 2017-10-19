@@ -42,9 +42,23 @@ def track_success():
     success_time = arrow.get(success_dict['timestamp'])
     
     # lodge success
-    process_success(mobile, success_time)
+    user_id = get_user_id(mobile)
+    process_success(user_id, success_time)
+    msg = congrats_msg(user_id)
+
+    resp = { "Content-type" : "application/json", "body" :
+            {  "speech": msg,
+                "displayText": msg, 
+                "contextOut":[],
+                "source": "haBot app"
+                }
+            }
+
+    response = jsonify(resp)
+
+    print response
    
-    return 'JSON posted'
+    return response
 
         # logic to determine response 
 

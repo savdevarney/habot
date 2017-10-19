@@ -141,7 +141,7 @@ def send_daily_msg():
                     messaging_service_sid=messaging_service_sid,
                     to=to,
                     from_=twilio_from,
-                    body="Hi there, {}! You are working on {}. {} \
+                    body="Hi there, {}! You are working on {}. {}\
                     Let me know when you're successful & remember the #".format(name, habit_title, stats_msg))
 
     print "the scheduling script ran @ {}".format(time.time())
@@ -165,12 +165,12 @@ def stats_msg(habit_id):
     three_day_streaks = stats['three_day_streaks']
     current_three_day = stats['current_three_day']
 
-    if three_day_streaks > 1: 
-        streak_msg: "You have {} three-day-streaks".format(three_day_streaks)
+    if three_day_streaks > 1:
+        streak_msg = "You have {} three-day-streaks".format(three_day_streaks)
     elif three_day_streaks == 1:
-        streak_msg: "Way to go! You've alredy collected your first three-day-streak!"
+        streak_msg = "Way to go! You've alredy collected your first three-day-streak!"
     else: 
-        streak_msg: "Let's help you earn your first three-day-streak with a success today."
+        streak_msg = "Let's help you earn your first three-day-streak with a success today."
         
     if current_three_day == 0 and three_day_streaks >= 1:
         streak_prompt = "Start a new three-day-streak with a success today!"
@@ -180,6 +180,39 @@ def stats_msg(habit_id):
         streak_prompt = "You're one success away from a new three day streak!"
 
     msg = streak_msg + streak_prompt
+
+    return msg
+
+def congrats_msg(user_id):
+    """ analyzes a user's stats after a success to customize the msg from 
+    HaBot """
+
+    habit_id = get_current_habit_id(user_id)
+    stats = get_stats(habit_id)
+    
+    three_day_streaks = stats['three_day_streaks']
+    current_three_day = stats['current_three_day_streak']
+
+    confirm_msg = "I've tracked that for you."
+        
+    if current_three_day == 0:
+        if three_day_streaks == 1:
+            stats_msg = "Way to go! You've collected your first three-day-streak!"
+        else:
+            stats_msg = "That's a new three-day-streak! {} in total now!".format(three_day_streaks)
+    elif current_three_day == 1:
+        if three_day_streaks == 0:
+            stats_msg = "You're on your way to your first three-day-streak!"
+        else:
+            stats_msg = "You're on your way to your next three-day-streak!"
+    elif current_three_day == 2:
+        if three_day_streaks == 0:
+            stats_msg = "You're one success away from a new three day streak!"
+        else:
+            stats_msg = "You're one success away from your next three-day-streak.\
+            Make it {} in total!".format(three_day_streaks + 1)
+
+    msg = confirm_msg + stats_msg
 
     return msg
 
@@ -508,7 +541,8 @@ def get_stats(habit_id):
             # determine if it classifies as a three_day streak
             if streak_length / 3 > 0:
                 stats['three_day_streaks'] += (streak_length / 3)
-            
+      
+      # NOT UPDATING IF USER'S FIRST SUCCESS IS SAME DAY AS CREATE DATE (streak_lenghth = 0)      
             # find the last streak
             if streak.end_id == last_success_id:
                 # if end of last streak == today or yesterday:
@@ -527,7 +561,7 @@ def get_stats(habit_id):
         if stats['current_streak'] >= 3:
             stats['current_three_day_streak'] = stats['current_streak'] - (3 * stats['three_day_streaks'])
         else:
-            stats['current_three_day_streak'] = stats ['current_streak']
+            stats['current_three_day_streak'] = stats['current_streak']
     
     else:
         # if no successes ... 
@@ -621,21 +655,23 @@ def get_graph_stats(stats):
     return graph_stats
 
 
-def process_success(mobile, success_time):
+def process_success(user_id, success_time):
 
     # get User and user's timezone
-    user = User.query.filter(User.mobile == mobile).one()
+    user = User.query.filter(User.user_id == user_id).one()
     tz = user.tz
-    user_id = user.user_id
+    mobile = user.mobile
 
     # get user's current habit id
-    habit = UserHabit.query.filter(UserHabit.current == True, UserHabit.user_id == user_id).one()
-    habit_id = habit.habit_id
+    # habit = UserHabit.query.filter(UserHabit.current == True, UserHabit.user_id == user_id).one()
+    habit_id = get_current_habit_id(user_id)
 
-    last_time = (find_last_success(habit_id)).time
+    last_success = find_last_success(habit_id)
 
-    if dates_same(success_time, last_time, tz):
-        print "user has already succeeded on this day"
+    if last_success:
+        last_time = last_success.time
+        if dates_same(success_time, last_time, tz):
+            print "user has already succeeded on this day"
 
     else:
         # determine if streak
@@ -716,6 +752,21 @@ def streak_update(habit_id, streak_id, success_id):
 
     db.session.add(streak)
     db.session.commit()
+
+def get_user_id(mobile):
+    """ returns the user_id for a user given a phone number"""
+
+    user = User.query.filter(User.mobile == mobile).first()
+    user_id = user.user_id
+    return user_id
+
+
+def get_current_habit_id(user_id): 
+    """ finds the current habit for a user """ 
+
+    habit = UserHabit.query.filter(UserHabit.current == True, UserHabit.user_id == user_id).one()
+    habit_id = habit.habit_id
+    return habit_id
 
 
 def dates_same(first_datetime, second_datetime, tz):
