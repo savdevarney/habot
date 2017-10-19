@@ -41,34 +41,193 @@ def send_code(mobile, verification_code):
         body="your code: {}".format(verification_code))
 
 
-# helper functions for sending welcome messages (TBD)
+# helper functions for sending messages
 
-# helper functions for sending reminders:
+def send_welcome_msg(user_id):
+    """ sends very first message after user registers """
 
-def send_daily_nudge():
-    """ send reminders sms messages to every user that should receive at that hour """
+    user = User.query.filter(User.user_id == user_id).first()
+    mobile = user.mobile
+    name = user.name
 
-    utc_hour = get_utc_hour()
+    message = client.messages.create(
+        messaging_service_sid=messaging_service_sid,
+        to=mobile,
+        from_=twilio_from,
+        body="Hi, {}! HaBot here. I feel honored you've choosen me to help you form new habits. \
+    You can habituate something new in about ~ 21 days of consistent effort. \
+    That's why I help you track your 'streaks' or consecutive days that you're successful. \
+    21 days sounds like a lot but just think of it as 7 three-day-streaks :) \
+    I can't wait to see what you habituate!".format(name))
 
-    habits = UserHabit.query.filter(UserHabit.time.hour == utc_hour).all()
-    #TODO - make sure ^ works
-
-    for habit in habits:
-        habit = habit.habit.title
-        to = habit.user.mobile
-        name = habit.user.name
-
-        message = client.messages.create(
-            messaging_service_sid=messaging_service_sid,
-            to=to,
-            from_=twilio_from,
-            body="Ready to {}, {}".format(habit, name))
-
-    print "the scheduling script ran @ {}".format(time.time())
+    print "welcome message sent!"
     print(message.sid)
 
 
-# helper functions for createing a new user
+def send_instruction_msg(user_id):
+    """ sends very first message after user registers """
+
+    user = User.query.filter(User.user_id == user_id).first()
+
+    mobile = user.mobile
+    name = user.name
+
+    message = client.messages.create(
+        messaging_service_sid=messaging_service_sid,
+        to=mobile,
+        from_=twilio_from,
+        body="Here is some helpful information on how to interact with me:")
+
+    print "instruction message sent"
+    print(message.sid)
+
+
+def send_habit_intro_msg(user_id):
+    """ sends first habit intro message """
+
+    user = User.query.filter(User.user_id == user_id).first()
+    mobile = user.mobile
+    name = user.name
+    habit = UserHabit.query.filter(UserHabit.user_id == user_id, UserHabit.current == True).first()
+    habits = UserHabit.query.filter(UserHabit.user_id == user_id).all()
+    habit_title = habit.habit.title #TODO: change relationship to be create_habit
+    habit_hour = get_local_habit_hour(habit.habit_id)
+
+    reminder = None
+    if len(habits) == 1:
+        reminder = "Whenever you're successful, tell me and I'll track it for you.\
+    To help me recognize your success, put a # in front of your msg like this:\
+    '#I did it, haBot!'' or '#yes!"
+    
+    else: 
+        reminder = "You know the drill, don't forget the #!"
+
+    message = client.messages.create(
+        messaging_service_sid=messaging_service_sid,
+        to=mobile,
+        from_=twilio_from,
+        body="I see you've committed to {}, what a wonderful thing to habituate in your life, {}! \
+        Every day at {} I'll send you a reminder. {}".format(habit_title, name, habit_hour, reminder))
+
+    print "habit_intro_msg sent"
+    print(message.sid)
+
+
+def send_daily_msg():
+    """ sends daily msg from HaBot - either daily reminder or deactivation"""
+
+    utc_hour = get_utc_hour()
+    current_utc_date = arrow.utc_now()
+
+    # if user has been inactive for 7 days, send deactivation instead of reminder:
+    send_deactivation_msgs() 
+
+    habits = UserHabit.query.filter(UserHabit.time.hour == utc_hour, UserHabit.current == True, UserHabit.active == True).all()
+
+    for habit in habits:
+        habit_id = habit.habit_id
+        habit_title = habit.habit.title
+        to = habit.user.mobile
+        name = habit.user.name
+        last_success = find_last_success(habit_id)
+        tz = habit.user.tz
+        if get_local_habit_hour(habit_id) == utc_hour:
+            stats_msg = stats_msg(habit_id)
+
+            # don't send the message if the user already tracked a success today
+            if not (last_success != None and (dates_same(last_success.time, arrow.utcnow(), tz))):
+
+                message = client.messages.create(
+                    messaging_service_sid=messaging_service_sid,
+                    to=to,
+                    from_=twilio_from,
+                    body="Hi there, {}! You are working on {}. {} \
+                    Let me know when you're successful & remember the #".format(name, habit_title, stats_msg))
+
+    print "the scheduling script ran @ {}".format(time.time())
+    print "message was: {}".format(message)
+    print(message.sid)
+
+
+def stats_msg(habit_id):
+    """ analyzes a user's stats for a given habit and returns the most
+    motivating message to include in the daily msg from HaBot"""
+
+    stats = get_stats(habit_id)
+
+    # if they are really on a roll, highlight their record:
+    # if stats['potential_streak'] > stats['longest_streak']:
+        # msg = "A success today would mean a new record: {} days in a row in total!".format(stats['potential_streak'])
+        # return msg
+
+    # otherwise, focus the msg around three day streak stats.
+    
+    three_day_streaks = stats['three_day_streaks']
+    current_three_day = stats['current_three_day']
+
+    if three_day_streaks > 1: 
+        streak_msg: "You have {} three-day-streaks".format(three_day_streaks)
+    elif three_day_streaks == 1:
+        streak_msg: "Way to go! You've alredy collected your first three-day-streak!"
+    else: 
+        streak_msg: "Let's help you earn your first three-day-streak with a success today."
+        
+    if current_three_day == 0 and three_day_streaks >= 1:
+        streak_prompt = "Start a new three-day-streak with a success today!"
+    elif current_three_day == 1:
+        streak_prompt = "Let's keep your streak going with a success today!"
+    elif current_three_day == 2:
+        streak_prompt = "You're one success away from a new three day streak!"
+
+    msg = streak_msg + streak_prompt
+
+    return msg
+
+
+def send_deactivation_msgs():
+    """ send deactivations to any user who hasn't been active in 7 days """
+
+    current_utc_date = arrow.utcnow()
+    current_utc_hour = get_utc_hour()
+
+    # find users who would receive a daily_msg at the given hour
+    habits = UserHabit.query.filter(UserHabit.time.hour == current_utc_hour,
+                                    UserHabit.current == True,
+                                    UserHabit.active == True).all()
+
+    for habit in habits:
+
+        tz = habit.user.tz
+
+        last_success = find_last_success(habit.habit_id) #Success object
+        
+        # if it's been more than 7 days since last_success or habit creation date:
+        if (
+            (last_success and (dates_week_apart(last_success.time, current_utc_date, tz)))
+                or (dates_week_apart(habit.utc_time, current_utc_date, tz))
+                ):
+                
+            deactivate_habit(habit_id)
+                
+            message = client.messages.create(
+                messaging_service_sid=messaging_service_sid,
+                to=to,
+                from_=twilio_from,
+                body="{}, I noticed you haven't responded in a while. \
+                I've gone ahead and paused this habit for you.  \
+                If/when you're ready to start working on this again just say 'unpause'".format(name))
+
+
+def deactivate_habit(habit_id):
+    """ deactivates a user_habit so they don't receive messages from habot anymore """
+
+    habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).first()
+    habit.acitve = False
+    db.session.add(habit)
+    db.session.commit()
+
+
+# helper functions user management
 
 def create_user_return_id(name, mobile, tz):
     """ creates a new user and returns the assigned user_id"""
@@ -80,6 +239,7 @@ def create_user_return_id(name, mobile, tz):
     user_id = user.user_id
 
     return user_id
+
 
 # helper functions for creating a new profile of factor ratings. 
 
@@ -223,6 +383,17 @@ def get_local_hour(tz):
     local_hour = time_local.hour
     return local_hour
 
+def get_local_habit_hour(habit_id):
+    """ returns the habit hour in the user's local time
+    in a string with format '7 am' """
+
+    habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).first()
+    habit_time = arrow.get(habit.utc_time)
+    tz = habit.user.tz
+    habit_time_local = habit_time.to(tz)
+    local_habit_hour = habit_time_local.format('h a')
+    return local_habit_hour
+
 
 def get_utc_hour():
     """ returns the utc hour of the current time"""
@@ -230,6 +401,7 @@ def get_utc_hour():
     time_utc = arrow.utcnow()
     utc_hour = time_utc.hour
     return utc_hour
+
 
 # helper functions for country and timezone information
 
@@ -498,7 +670,10 @@ def find_last_success(habit_id):
 
     last_success = Success.query.filter(Success.habit_id == habit_id).order_by(Success.time.desc()).first()
 
-    return last_success
+    if last_success:
+        return last_success
+    else:
+        return None
 
 
 def get_streak_id(habit_id, success_time):
@@ -546,10 +721,8 @@ def streak_update(habit_id, streak_id, success_id):
 def dates_same(first_datetime, second_datetime, tz):
     """ checks if two date are the same.  Returns True if so and False if not """
 
-    print first_datetime
-    print second_datetime
     first = arrow.get(first_datetime)
-    second = arrow.get(second_datetime)
+    second = arrow.get(second_datetime) #most recent
 
     if (first.to(tz)).date() == (second.to(tz)).date():
         return True
@@ -560,7 +733,7 @@ def dates_consecutive(first_datetime, second_datetime, tz):
     """ checks if two date are consecutive.  Returns True if so and False if not """
 
     first = arrow.get(first_datetime)
-    second = arrow.get(second_datetime)
+    second = arrow.get(second_datetime) #most recent
 
     diff = (first.to(tz)).date() - (second.to(tz)).date()
     
@@ -573,10 +746,24 @@ def dates_same_or_consecutive(first_datetime, second_datetime, tz):
     """ checks if two dates are the same or consecutive"""
 
     first = arrow.get(first_datetime)
-    second = arrow.get(second_datetime)
+    second = arrow.get(second_datetime) #most recent
 
     if (dates_same(first, second, tz) 
         or dates_consecutive(first, second, tz)):
+        return True
+    else:
+        return False
+
+
+def dates_week_apart(first_datetime, second_datetime, tz):
+    """ checks if two dates are more than a week apart"""
+
+    first = arrow.get(first_datetime)
+    second = arrow.get(second_datetime) #most recent
+
+    diff = (first.to(tz)).date() - (second.to(tz)).date()
+
+    if diff.days > 7:
         return True
     else:
         return False

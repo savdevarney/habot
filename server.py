@@ -129,11 +129,16 @@ def create_user():
 
     country_code = session['country_code']
     tz = session['tz']
+
+    # format mobile for storing in DB accuratey
     mobile = format_mobile(session['mobile'], country_code)
     name = session['name']
 
     # create user and add user_id to session
     user_id = create_user_return_id(name, mobile, tz)
+
+    # send user welcome msg
+    send_welcome_msg(user_id)
 
     #set user_id in session
     session['user_id'] = user_id
@@ -142,7 +147,7 @@ def create_user():
     date = (arrow.utcnow()).format('YYYY-MM-DD HH:mm:ss ZZ')
     profile_id = create_profile_return_id(user_id, date)
     
-    #create dictionary of results from factor rating to pass into create_factor_rating
+    #create dictionary of results from factor rating to pass to create_factor_rating
     factors = Factor.query.all()
     factor_scores = {}
     for factor in factors:
@@ -318,6 +323,7 @@ def show_confirmation():
     habit_id = add_new_habit_return_id(user_id, create_habit_id, break_habit_id, utc_time, partner_id)
 
     habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).first()
+    send_habit_intro_msg(user_id)
 
     return render_template('confirm.html', habit=habit)
 
