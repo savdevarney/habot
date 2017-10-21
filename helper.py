@@ -12,6 +12,7 @@ import phonenumbers
 import pytz
 
 
+
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
 auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 messaging_service_sid = os.environ["TWILIO_MESSAGING_SERVICE_SID"]
@@ -116,13 +117,17 @@ def send_habit_intro_msg(user_id):
 def send_daily_msg():
     """ sends daily msg from HaBot - either daily reminder or deactivation"""
 
-    utc_hour = get_utc_hour()
-    current_utc_date = arrow.utc_now()
+    # current_utc_date = arrow.utcnow()
+    #for testing: 
+    current_utc_hour = 18
+    current_utc_date = (arrow.utcnow()).replace(hour=18)
+  
 
     # if user has been inactive for 7 days, send deactivation instead of reminder:
-    send_deactivation_msgs() 
+    send_pause_msgs() 
 
-    habits = UserHabit.query.filter(UserHabit.time.hour == utc_hour, UserHabit.current == True, UserHabit.active == True).all()
+    habits = UserHabit.query.filter(UserHabit.current == True, UserHabit.active == True).all()
+    # TODO ... optimize so you're only querying for exact hour, not all active habits.
 
     for habit in habits:
         habit_id = habit.habit_id
@@ -131,22 +136,26 @@ def send_daily_msg():
         name = habit.user.name
         last_success = find_last_success(habit_id)
         tz = habit.user.tz
-        if get_local_habit_hour(habit_id) == utc_hour:
-            stats_msg = stats_msg(habit_id)
+        if habit.utc_time.hour == 18:
+            msg = stats_msg(habit_id)
 
             # don't send the message if the user already tracked a success today
-            if not (last_success != None and (dates_same(last_success.time, arrow.utcnow(), tz))):
+            if not (last_success != None and (dates_same(last_success.time, current_utc_date, tz))):
 
                 message = client.messages.create(
-                    messaging_service_sid=messaging_service_sid,
-                    to=to,
-                    from_=twilio_from,
-                    body="Hi there, {}! You are working on {}. {}\
-                    Let me know when you're successful & remember the #".format(name, habit_title, stats_msg))
+                messaging_service_sid=messaging_service_sid,
+                to=to,
+                from_=twilio_from,
+                body="Hi there, {}! HaBot here. You're working on {}. {}\
+                Let me know when you're successful & remember the #.\
+                I believe in you".format(name, habit_title, msg))
+
+                print "message was: {}".format(message)
+                print(message.sid)
 
     print "the scheduling script ran @ {}".format(time.time())
-    print "message was: {}".format(message)
-    print(message.sid)
+    
+    
 
 
 def stats_msg(habit_id):
@@ -163,7 +172,7 @@ def stats_msg(habit_id):
     # otherwise, focus the msg around three day streak stats.
     
     three_day_streaks = stats['three_day_streaks']
-    current_three_day = stats['current_three_day']
+    current_three_day = stats['current_three_day_streak']
 
     if three_day_streaks > 1:
         streak_msg = "You have {} three-day-streaks".format(three_day_streaks)
@@ -172,12 +181,14 @@ def stats_msg(habit_id):
     else: 
         streak_msg = "Let's help you earn your first three-day-streak with a success today."
         
-    if current_three_day == 0 and three_day_streaks >= 1:
+    if current_three_day == 0:
         streak_prompt = "Start a new three-day-streak with a success today!"
     elif current_three_day == 1:
         streak_prompt = "Let's keep your streak going with a success today!"
     elif current_three_day == 2:
         streak_prompt = "You're one success away from a new three day streak!"
+    else:
+        streak_prompt = " "
 
     msg = streak_msg + streak_prompt
 
@@ -205,7 +216,7 @@ def congrats_msg(user_id):
         if three_day_streaks == 0:
             stats_msg = "Great job! You're on your way to your first three-day-streak! I'll check back in tomorrow."
         else:
-            stats_msg = "You're on your way to your next three-day-streak!"
+            stats_msg = "You're now on day 1 of your next three-day-streak! I believe in you!".format(three_day_streaks)
     elif current_three_day == 2:
         if three_day_streaks == 0:
             stats_msg = "You're one success away from a new three-day-streak!"
@@ -218,15 +229,18 @@ def congrats_msg(user_id):
     return msg
 
 
-def send_deactivation_msgs():
+def send_pause_msgs():
     """ send deactivations to any user who hasn't been active in 7 days """
 
-    current_utc_date = arrow.utcnow()
-    current_utc_hour = get_utc_hour()
+    # current_utc_date = arrow.utcnow()
+    #for testing: 
+    current_utc_hour = 18
+    current_utc_date = (arrow.utcnow()).replace(hour=18)
+
+
 
     # find users who would receive a daily_msg at the given hour
-    habits = UserHabit.query.filter(UserHabit.time.hour == current_utc_hour,
-                                    UserHabit.current == True,
+    habits = UserHabit.query.filter(UserHabit.current == True,
                                     UserHabit.active == True).all()
 
     for habit in habits:
@@ -238,28 +252,56 @@ def send_deactivation_msgs():
         # if it's been more than 7 days since last_success or habit creation date:
         if (
             (last_success and (dates_week_apart(last_success.time, current_utc_date, tz)))
-                or (dates_week_apart(habit.utc_time, current_utc_date, tz))
+                or ((not last_success) and dates_week_apart(habit.utc_time, current_utc_date, tz))
                 ):
                 
-            deactivate_habit(habit_id)
+            pause_habit(habit.habit_id)
+
+            to = habit.user.mobile
+            name = habit.user.name
                 
             message = client.messages.create(
                 messaging_service_sid=messaging_service_sid,
                 to=to,
                 from_=twilio_from,
-                body="{}, I noticed you haven't responded in a while. \
-                I've gone ahead and paused this habit for you.  \
+                body="{}, I noticed you haven't responded in a while.\
+                I've gone ahead and paused this habit for you.\
                 If/when you're ready to start working on this again just say 'unpause'".format(name))
 
 
-def deactivate_habit(habit_id):
+def pause_habit(habit_id):
     """ deactivates a user_habit so they don't receive messages from habot anymore """
 
     habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).first()
-    habit.acitve = False
+    habit.active = False
+    db.session.add(habit)
+    db.session.commit()
+    print "habit paused (active == False)"
+
+
+def pause_msg(user_id):
+    """ returns a puase message for habot to send"""
+
+
+def unpause_habit(user_id):
+    """ unpauses a habit that has been paused after user reponds to habit they want to unpause"""
+
+    habit_id = get_current_habit_id(user_id)
+    habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).first()
+    title = habit.habit.title
+    name = habit.user.name
+    habit.active = True
+
     db.session.add(habit)
     db.session.commit()
 
+    msg = "Ok, great {}, I'm glad to hear you want to keep working on {}.\
+    I've unpaused it for you and will continue sending reminders.".format(name, title)
+
+    print "habit unpaused (active == True)"
+    return msg
+
+    
 
 # helper functions user management
 
@@ -675,25 +717,27 @@ def process_success(user_id, success_time):
 
     if last_success:
         last_time = last_success.time
-        if dates_same(success_time, last_time, tz):
-            return None
 
-    else:
         # determine if streak
         streak_id = get_streak_id(habit_id, success_time)
+        
+        if dates_same(success_time, last_time, tz):
+            print "date same as last time - no success processed"
+            return None
 
-        if streak_id == None:
+        elif streak_id == None:
             # create success and create sterak
             success_id = add_success_get_id(habit_id, mobile, success_time)
             streak_update(habit_id, streak_id, success_id)
             print "new streak added"
-        else:
+            return success_id
+
+        elif streak_id:
             # create success and update streak
             success_id = add_success_get_id(habit_id, mobile, success_time)
             streak_update(habit_id, streak_id, success_id)
             print "existing streak updated"
-
-        print "user success processed"
+            return success_id
     
         
 def add_success_get_id(habit_id, mobile, success_time):
@@ -722,9 +766,11 @@ def get_streak_id(habit_id, success_time):
     returns streak_id or none if success is not part of a streak """
 
     user_habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).one()
+
     tz = user_habit.user.tz
 
     last_success = find_last_success(habit_id)
+    # alt to find tz = last_success.habit.user.tz
 
     if last_success:
         last_success_id = last_success.success_id
@@ -826,10 +872,30 @@ def dates_week_apart(first_datetime, second_datetime, tz):
 
     diff = (first.to(tz)).date() - (second.to(tz)).date()
 
-    if diff.days > 7:
+    if diff.days < -7:
         return True
     else:
         return False
+
+
+def connect_to_db(app):
+    """Connect the database to the Flask app."""
+
+    # Configure to use the PstgreSQL database.
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///habot'
+    app.config['SQLALCHEMY_ECHO'] = True
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.app = app
+    db.init_app(app)
+
+
+if __name__ == "__main__":
+    # As a convenience, if we run this module interactively, it will leave
+    # you in a state of being able to work with the database directly.
+
+    from server import app
+    connect_to_db(app)
+    print "Connected to DB."
 
 
 

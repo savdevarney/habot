@@ -28,58 +28,59 @@ def track_success():
     store in success table """
 
     # collect json from request, convert to dictionary:
-    success_dict = request.get_json()
+    habot_request = request.get_json()
 
-    print "json received"
-    print success_dict
+    print "habot request received from Dialogflow"
+    print habot_request
 
     # extract user mobile - ex: +18028253270 and format it for lookup in db
-    mobile_unprocessed = success_dict['originalRequest']['data']['From']
-    country_code = success_dict['originalRequest']['data']['FromCountry']
+    mobile_unprocessed = habot_request['originalRequest']['data']['From']
+    country_code = habot_request['originalRequest']['data']['FromCountry']
     mobile = format_mobile(mobile_unprocessed, country_code)
-    
-    # extract time (time API.ai agent tracks success) - ex: 2017-10-01T15:40:08.959Z
-    success_time = arrow.get(success_dict['timestamp'])
-    
-    # lodge success
     user_id = get_user_id(mobile)
-    process_success(user_id, success_time)
-    if not process_success:
-        msg ="I've already tracked a success for you today, but I'm thrilled to hear you were successful again today. Keep up the great work."
-    msg = congrats_msg(user_id)
 
-    resp = { "Content-type" : "application/json", 
-    "speech": msg, 
-    "displayText": msg,
-    "data": {},
-    "contextOut":[],
-    "source": "haBot app"}
+    #parse habot_request
+    if habot_request['result']['action'] == 'track_success':
+        
+        # extract time (time API.ai agent tracks success) - ex: 2017-10-01T15:40:08.959Z
+        success_time = arrow.get(habot_request['timestamp'])
+        
+        # track success
+        success = process_success(user_id, success_time)
 
-    response = jsonify(resp)
+        # generate success message
+        msg = congrats_msg(user_id)
+        print "success lodged"
+        # if already success on this day, send alt message. 
+        if not success:
+            msg ="I've already tracked a success for you today, but I'm thrilled to hear you were successful again today. Keep up the great work."
+        
+        # send success message
+        resp = { "Content-type" : "application/json", 
+        "speech": msg, 
+        "displayText": msg,
+        "data": {},
+        "contextOut":[],
+        "source": "haBot app"}
+
+        response = jsonify(resp)
+
+    elif habot_request['result']['action'] == 'unpause':
+
+        msg = unpause_habit(user_id)
+
+        resp = { "Content-type" : "application/json", 
+        "speech": msg, 
+        "displayText": msg,
+        "data": {},
+        "contextOut":[],
+        "source": "haBot app"}
+
+        response = jsonify(resp)
 
     print response
    
     return response
-
-        # logic to determine response
-
-        # response =
-        # Headers:
-        # Content-type: application/json
-        # Body:
-        # {
-        # "speech" : "response to the request"
-        # "displayText": "Text displaye don the user device screen"
-        # "data" : {"twilio"} : {<twilio_message>}}
-        # "contextOut": [ ...]
-        # "source": ""
-        # "followupEvent": {"followupEvent" : {"name": "<event_name>", "data": {"<paramater_name>":"<parameter_value"}}}
-        # }
-        # when a followupEvent parameter is sent from the web service, the system ignores the rest.  
-    
-        # package into json and return to API.AI
-        # create a custom response that's based on user data ... (slot filling)
-
 
 @app.route('/home')
 def show_homepage():
@@ -208,7 +209,6 @@ def choose_timezone():
     """ onboarding, step 2 - identify timezone """
     
     country_code = session['country_code']
-    tz = session['tz']
 
     country_code = session['country_code']
     
@@ -361,12 +361,12 @@ def run_schedule():
 
 if __name__ == "__main__":
     # set the schedule for sending daily nudges:
-    #schedule.every(1).minutes.do(send_daily_nudge)
+    schedule.every(1).minutes.do(send_daily_msg)
     
     # establish the thread:
-    #t = Thread(target=run_schedule)
-    #t.start()
-    #print"Schedule is running. Start time: " + str(start_time)
+    t = Thread(target=run_schedule)
+    t.start()
+    print"Schedule is running. Start time: " + str(start_time)
 
     # connect to db
     connect_to_db(app)
