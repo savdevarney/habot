@@ -361,11 +361,11 @@ def run_schedule():
 
 if __name__ == "__main__":
     # set the schedule for sending daily nudges:
-    schedule.every(1).minutes.do(send_daily_msg)
+    # schedule.every(1).minutes.do(send_daily_msg)
     
     # establish the thread:
-    t = Thread(target=run_schedule)
-    t.start()
+    # t = Thread(target=run_schedule)
+    # t.start()
     print"Schedule is running. Start time: " + str(start_time)
 
     # connect to db
