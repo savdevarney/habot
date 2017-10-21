@@ -10,6 +10,7 @@ from model import (connect_to_db, db, User, CreateHabit, UserHabit, Success,
 import pycountry
 import phonenumbers
 import pytz
+import emoji
 
 
 
@@ -21,6 +22,11 @@ twilio_to = os.environ["TWILIO_TEST_TO_NUMBER"]
 client = Client(account_sid, auth_token)
 
 # helper functions for verifiction code:
+
+def emoji_test():
+    text = emoji.emojize("this is a :wave:", use_aliases=True)
+    print text
+    return text
 
 def send_confirmation_code(mobile):
         verification_code = generate_code()
@@ -146,9 +152,9 @@ def send_daily_msg():
                 messaging_service_sid=messaging_service_sid,
                 to=to,
                 from_=twilio_from,
-                body="Hi there, {}! HaBot here. You're working on {}. {}\
-                Let me know when you're successful & remember the #.\
-                I believe in you".format(name, habit_title, msg))
+                body= emoji.emojize(":wave:", use_aliases=True) + ",{}! HaBot here. You're working on {}. {}\
+            Let me know when you're successful & remember the #.\
+            I believe in you!".format(name, habit_title, msg))
 
                 print "message was: {}".format(message)
                 print(message.sid)
@@ -210,6 +216,12 @@ def congrats_msg(user_id):
     if current_three_day == 0:
         if three_day_streaks == 1:
             stats_msg = "Way to go! You've collected your first three-day-streak!"
+        elif three_day_streaks == 7:
+            stats_msg = "Congrats! You now have 7 total 3-day-streaks!\
+    I'm in awe of you, {}.\
+    Most people that reach point start feeling their new habit stick.\
+    But I'll keep tracking your successes as long as you'd like. See how far you can get!".format(name)
+
         else:
             stats_msg = "That's a new three-day-streak! {} in total now!".format(three_day_streaks)
     elif current_three_day == 1:
@@ -236,8 +248,6 @@ def send_pause_msgs():
     #for testing: 
     current_utc_hour = 18
     current_utc_date = (arrow.utcnow()).replace(hour=18)
-
-
 
     # find users who would receive a daily_msg at the given hour
     habits = UserHabit.query.filter(UserHabit.current == True,
@@ -714,30 +724,28 @@ def process_success(user_id, success_time):
     habit_id = get_current_habit_id(user_id)
 
     last_success = find_last_success(habit_id)
+    last_time = last_success.time
 
-    if last_success:
-        last_time = last_success.time
-
-        # determine if streak
-        streak_id = get_streak_id(habit_id, success_time)
+    # determine if streak
+    streak_id = get_streak_id(habit_id, success_time)
         
-        if dates_same(success_time, last_time, tz):
-            print "date same as last time - no success processed"
-            return None
+    if dates_same(success_time, last_time, tz):
+        print "date same as last time - no success processed"
+        return None
 
-        elif streak_id == None:
-            # create success and create sterak
-            success_id = add_success_get_id(habit_id, mobile, success_time)
-            streak_update(habit_id, streak_id, success_id)
-            print "new streak added"
-            return success_id
+    elif streak_id == None or last_success == None: 
+        # create success and create sterak
+        success_id = add_success_get_id(habit_id, mobile, success_time)
+        streak_update(habit_id, streak_id, success_id)
+        print "new streak added"
+        return success_id
 
-        elif streak_id:
-            # create success and update streak
-            success_id = add_success_get_id(habit_id, mobile, success_time)
-            streak_update(habit_id, streak_id, success_id)
-            print "existing streak updated"
-            return success_id
+    elif streak_id:
+        # create success and update streak
+        success_id = add_success_get_id(habit_id, mobile, success_time)
+        streak_update(habit_id, streak_id, success_id)
+        print "existing streak updated"
+        return success_id
     
         
 def add_success_get_id(habit_id, mobile, success_time):
