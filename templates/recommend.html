@@ -4,10 +4,9 @@
 <h2> Here are some habits I'd recommend for you <br> 
     based on how things are going for you right now</h2>
 
-<div id='habits-div'>
-    <form id='rec-form' action='/time' method='GET'>
-    </form>
-</div>
+<div id='habits-div' class='form-inline'>
+    </div>
+
 
 <a id="get-recs" href="/get-recs.json">more recommendations</a>
 <br>
@@ -19,15 +18,15 @@
 
 function showRecs(results) {
     // json structure: { habit_id: 'id' { title: 'title', description: 'description'}}
-    $('#rec-form').empty();
+    $('#habits-div').empty();
     var result = results
     for (var id in result) {
         var habit_id = id
         console.log(habit_id)
         var title = result[habit_id]["title"];
         var description = result[habit_id]["description"];
-        var div = "<div id='habit-div'><input type='hidden' name='habit_id' value=" +  habit_id + ">" + "<input type='submit' value=" + "'" + title + ": " + description + "'" + "></div>";
-        $('#rec-form').append(div);
+        var div = "<form action='/time' method='GET'><div id='habit-tile'><input type='hidden' name='habit_id' value=" +  habit_id + ">" + "<input type='submit' class='habit' value=" + "'" + title + ": " + description + "'" + "></div></form>";
+        $('#habits-div').append(div);
     }
 }
 
@@ -47,4 +46,3 @@ firstRecs()
 </script>
 
 {% endblock %}
-

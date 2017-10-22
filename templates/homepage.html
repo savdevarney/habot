@@ -1,10 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<br>
+<b3>
+<br>
+<div class='.container-fluid'>
 <h1>Hi, I'm HaBot.</h1>
 <h2> I help you create new habits</h2>
 <h2> What's your phone number? </h2>
+</div>
 
+<div class='.container-fluid'>
 <form action='/verify', method='GET'>
     <select name="country_code">
         {% for item in sorted_countries %}
@@ -17,5 +23,42 @@
     <input type='text' name='mobile'>
     <input type='submit' value='Lets do this!'>
 </form>
+
+</div>
+
+<br>
+<br>
+<br>
+
+
+<!-- <div class='container'>
+<img src='/static/habot_icon.png' height='75'></img>
+<h2><b><i>I'll help you ...</i></b></h2>
+</div> -->
+
+<br>
+<br>
+<br>
+
+<div class='.container-fluid'>
+    <div class="row">
+
+        <div class="col-sm">
+        <b>Find Habits</b><br>
+        I'll recommend some potential micro habits based on what's going on in your life.  Micro habits are something specific you can do in 30 seconds or less.  
+        </div>
+
+        <div class="col-sm">
+        <b>Track Progress</b><br>
+        I'll reach out every day to send reminders.  When you respond with a '#yes', I'll track it for you. I'll also do my best to cheer you on along thew ay :) 
+        </div>
+
+        <div class="col-sm">
+        <b>Create New Behaviors</b><br>
+        It takes about 21 days to habituate almost anything.  But consistency is important so I track every '3-day streak' you have and help you get to at least 7.   
+        </div>
+
+    </div>
+</div>
 
 {% endblock %}

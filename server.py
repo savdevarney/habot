@@ -53,7 +53,7 @@ def track_success():
         print "success lodged"
         # if already success on this day, send alt message. 
         if not success:
-            msg ="I've already tracked a success for you today, but I'm thrilled to hear you were successful again today. Keep up the great work."
+            msg ="I've already tracked a success for you today, but I'm thrilled to hear you were successful again. Keep up the great work."
         
         # send success message
         resp = { "Content-type" : "application/json", 
@@ -254,7 +254,7 @@ def display_recommendations():
         index = session['rec_index']
         
         # if this request would provide the last recs in list, reset counter
-        if ((index == length) or (index == (length + (length % 4)))):
+        if ((index == length) or (index == (length - (length % 4)))):
             session['rec_index'] = 4
 
         # if not at end of list, increment the counter
@@ -361,12 +361,12 @@ def run_schedule():
 
 if __name__ == "__main__":
     # set the schedule for sending daily nudges:
-    # schedule.every(1).minutes.do(send_daily_msg)
+    #schedule.every(1).minutes.do(send_daily_msg)
     
     # establish the thread:
-    # t = Thread(target=run_schedule)
-    # t.start()
-    # print"Schedule is running. Start time: " + str(start_time)
+    #t = Thread(target=run_schedule)
+    #t.start()
+    #print"Schedule is running. Start time: " + str(start_time)
 
     # connect to db
     connect_to_db(app)

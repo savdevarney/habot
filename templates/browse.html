@@ -3,14 +3,16 @@
 
 <h2>Which habit would you like to work on?</h2>
 
+<div class='form-inline'>
 {% for habit in habits %}
 <form action='/time' method='GET'>
-<div>
+<div id='habit-tile'>
     <input type="hidden" name="habit_id" value="{{ habit.create_habit_id }}">
-    <input class="habit" type='submit', value="{{ habit.title }}: {{ habit.description }}">
+    <input class="habit" type='submit' value="{{ habit.title }}: {{ habit.description }}">
 </div>
 </form>
 {% endfor %}
+</div>
 
 
 {% endblock %}

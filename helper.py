@@ -12,8 +12,6 @@ import phonenumbers
 import pytz
 import emoji
 
-
-
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
 auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 messaging_service_sid = os.environ["TWILIO_MESSAGING_SERVICE_SID"]
@@ -21,12 +19,20 @@ twilio_from = os.environ["TWILIO_FROM_NUMBER"]
 twilio_to = os.environ["TWILIO_TEST_TO_NUMBER"]
 client = Client(account_sid, auth_token)
 
-# helper functions for verifiction code:
+thumbs_up = emoji.emojize(":thumbsup:", use_aliases=True)
+folded_hands = emoji.emojize(":folded_hands:", use_aliases=True)
+wave = emoji.emojize(":wave:", use_aliases=True)
+robot = emoji.emojize(":robot_face:", use_aliases=True)
+purple_heart = emoji.emojize(":purple_heart:", use_aliases=True)
+party_popper = emoji.emojize(":party_popper:", use_aliases=True)
+trophy = emoji.emojize(":trophy:", use_aliases=True)
+reminder_ribbon = emoji.emojize(":reminder_ribbon:", use_aliases=True)
+alarm_clock = emoji.emojize(":alarm_clock:", use_aliases=True)
+chart_increasing = emoji.emojize(":chart_increasing:", use_aliases=True)
+oncoming_fist = emoji.emojize(":oncoming_fist:", use_aliases=True)
 
-def emoji_test():
-    text = emoji.emojize("this is a :wave:", use_aliases=True)
-    print text
-    return text
+
+# helper functions for verifiction code:
 
 def send_confirmation_code(mobile):
         verification_code = generate_code()
@@ -61,11 +67,12 @@ def send_welcome_msg(user_id):
         messaging_service_sid=messaging_service_sid,
         to=mobile,
         from_=twilio_from,
-        body="Hi, {}! HaBot here. I feel honored you've choosen me to help you form new habits. \
-    You can create a new habit with ~ 21 days of consistent effort.\
-    That's why I help you track your 'streaks' or consecutive days that you're successful.\
-    21 days may sound like a lot but just think of it as 7 three-day-streaks :)\
-    I can't wait to see what you habituate!".format(name))
+        body="Hello, {}! ".format(name) + "HaBot here." + robot + purple_heart \
+        + " I feel honored you've choosen me to help you form new habits." 
+    + folded_hands + "You can create a new habit with ~ 21 days of consistent effort.\
+    That's why I help you track 'streaks' (consecutive days of success).\
+    21 days may feel like a lot but just think of it as 7 three-day-streaks" + thumbs_up +
+    " I can't wait to see what you habituate!")
 
     print "welcome message sent!"
     print(message.sid)
@@ -102,9 +109,9 @@ def send_habit_intro_msg(user_id):
 
     reminder = None
     if len(habits) == 1:
-        reminder = "Let me know when you're successful and I'll track your progress.\
-    To help me recognize your success, put a # in front of your msg like this:\
-    '#I did it, haBot!'' or '#yes!'"
+        reminder = "Let me know when you're successful and I'll track your \
+    progress." + chart_increasing + "To help me recognize your success, put a #\
+    in front of your msg like this: '#I did it, haBot!'' or '#yes!'" + oncoming_fist
     
     else: 
         reminder = "You know the drill, don't forget the #!"
@@ -113,8 +120,8 @@ def send_habit_intro_msg(user_id):
         messaging_service_sid=messaging_service_sid,
         to=mobile,
         from_=twilio_from,
-        body="I see you've committed to {}, what a wonderful thing to habituate in your life, {}!\
-        Every day at {} I'll send you a reminder. {}".format(habit_title, name, habit_hour, reminder))
+        body="I see you've committed to {}. What a wonderful thing to habituate in your life, {}!\
+    Every day at {} I'll send you a reminder. ".format(habit_title, name, habit_hour) + alarm_clock + reminder)
 
     print "habit_intro_msg sent"
     print(message.sid)
@@ -152,7 +159,7 @@ def send_daily_msg():
                 messaging_service_sid=messaging_service_sid,
                 to=to,
                 from_=twilio_from,
-                body= emoji.emojize(":wave:", use_aliases=True) + ",{}! HaBot here. You're working on {}. {}\
+                body=  wave + ",{}! HaBot here. You're working on {}. {}\
             Let me know when you're successful & remember the #.\
             I believe in you!".format(name, habit_title, msg))
 
@@ -217,10 +224,9 @@ def congrats_msg(user_id):
         if three_day_streaks == 1:
             stats_msg = "Way to go! You've collected your first three-day-streak!"
         elif three_day_streaks == 7:
-            stats_msg = "Congrats! You now have 7 total 3-day-streaks!\
-    I'm in awe of you, {}.\
-    Most people that reach point start feeling their new habit stick.\
-    But I'll keep tracking your successes as long as you'd like. See how far you can get!".format(name)
+            stats_msg = party_popper + "Congrats! You now have 7 total 3-day-streaks!\
+    I'm in awe of you, {}. Most people that reach this point start feeling their new habit stick.\
+    But I'll keep tracking your successes for as long as you'd like. See how far you can get!".format(name) + trophy
 
         else:
             stats_msg = "That's a new three-day-streak! {} in total now!".format(three_day_streaks)
@@ -598,7 +604,6 @@ def get_stats(habit_id):
             if streak_length / 3 > 0:
                 stats['three_day_streaks'] += (streak_length / 3)
       
-      # NOT UPDATING IF USER'S FIRST SUCCESS IS SAME DAY AS CREATE DATE (streak_lenghth = 0)      
             # find the last streak
             if streak.end_id == last_success_id:
                 # if end of last streak == today or yesterday
@@ -718,7 +723,7 @@ def get_graph_stats(stats):
 def process_success(user_id, success_time):
 
     # get User and user's timezone
-    user = User.query.filter(User.user_id == user_id).one()
+    user = User.query.filter(User.user_id == user_id).first()
     tz = user.tz
     mobile = user.mobile
 
@@ -727,23 +732,25 @@ def process_success(user_id, success_time):
     habit_id = get_current_habit_id(user_id)
 
     last_success = find_last_success(habit_id)
-    last_time = last_success.time
 
     # determine if streak
     streak_id = get_streak_id(habit_id, success_time)
-        
-    if dates_same(success_time, last_time, tz):
-        print "date same as last time - no success processed"
-        return None
+    
+    if last_success:
+        last_time = last_success.time
 
-    elif streak_id == None or last_success == None: 
+        if dates_same(success_time, last_time, tz):
+            print "date same as last time - no success processed"
+            return None
+
+    if streak_id == None or last_success == None: 
         # create success and create sterak
         success_id = add_success_get_id(habit_id, mobile, success_time)
         streak_update(habit_id, streak_id, success_id)
         print "new streak added"
         return success_id
 
-    elif streak_id:
+    if streak_id:
         # create success and update streak
         success_id = add_success_get_id(habit_id, mobile, success_time)
         streak_update(habit_id, streak_id, success_id)
@@ -776,7 +783,7 @@ def get_streak_id(habit_id, success_time):
     """ determines if a new success is part of an existing streak or not.
     returns streak_id or none if success is not part of a streak """
 
-    user_habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).one()
+    user_habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).first()
 
     tz = user_habit.user.tz
 
@@ -790,7 +797,7 @@ def get_streak_id(habit_id, success_time):
                 
         # if existing streak
         if dates_consecutive(last_success_time, success_time, tz):
-            streak = Streak.query.filter(Streak.end_id == last_success_id).one()
+            streak = Streak.query.filter(Streak.end_id == last_success_id).first()
             return streak.streak_id
         else:
             return None
