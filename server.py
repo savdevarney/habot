@@ -366,7 +366,7 @@ if __name__ == "__main__":
     # establish the thread:
     # t = Thread(target=run_schedule)
     # t.start()
-    print"Schedule is running. Start time: " + str(start_time)
+    # print"Schedule is running. Start time: " + str(start_time)
 
     # connect to db
     connect_to_db(app)
