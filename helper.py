@@ -12,12 +12,16 @@ import phonenumbers
 import pytz
 import emoji
 
+### TWILIO HELPERS ###
+
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
 auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 messaging_service_sid = os.environ["TWILIO_MESSAGING_SERVICE_SID"]
 twilio_from = os.environ["TWILIO_FROM_NUMBER"]
 twilio_to = os.environ["TWILIO_TEST_TO_NUMBER"]
 client = Client(account_sid, auth_token)
+
+### EMOJIS ###
 
 thumbs_up = emoji.emojize(":thumbsup:", use_aliases=True)
 folded_hands = emoji.emojize(":folded_hands:", use_aliases=True)
@@ -32,7 +36,7 @@ chart_increasing = emoji.emojize(":chart_increasing:", use_aliases=True)
 oncoming_fist = emoji.emojize(":oncoming_fist:", use_aliases=True)
 
 
-# helper functions for verifiction code:
+### VERIFICATION CODE HELPERS ###
 
 def send_confirmation_code(mobile):
         verification_code = generate_code()
@@ -54,7 +58,7 @@ def send_code(mobile, verification_code):
         body="your code: {}".format(verification_code))
 
 
-# helper functions for sending messages
+### SENDING MESSAGES HELPERS ###
 
 def send_welcome_msg(user_id):
     """ sends very first message after user registers """
@@ -131,7 +135,7 @@ def send_daily_msg():
     """ sends daily msg from HaBot - either daily reminder or deactivation"""
 
     # current_utc_date = arrow.utcnow()
-    #for testing: 
+    ### for testing: 
     current_utc_hour = 18
     current_utc_date = (arrow.utcnow()).replace(hour=18)
   
@@ -167,8 +171,6 @@ def send_daily_msg():
                 print(message.sid)
 
     print "the scheduling script ran @ {}".format(time.time())
-    
-    
 
 
 def stats_msg(habit_id):
@@ -176,14 +178,6 @@ def stats_msg(habit_id):
     motivating message to include in the daily msg from HaBot"""
 
     stats = get_stats(habit_id)
-
-    # if they are really on a roll, highlight their record:
-    # if stats['potential_streak'] > stats['longest_streak']:
-        # msg = "A success today would mean a new record: {} days in a row in total!".format(stats['potential_streak'])
-        # return msg
-
-    # otherwise, focus the msg around three day streak stats.
-    
     three_day_streaks = stats['three_day_streaks']
     current_three_day = stats['current_three_day_streak']
 
@@ -191,9 +185,9 @@ def stats_msg(habit_id):
         streak_msg = "You have {} three-day-streaks".format(three_day_streaks)
     elif three_day_streaks == 1:
         streak_msg = "Way to go! You've alredy collected your first three-day-streak!"
-    else: 
+    else:
         streak_msg = "Let's help you earn your first three-day-streak with a success today."
-        
+
     if current_three_day == 0:
         streak_prompt = "Start a new three-day-streak with a success today!"
     elif current_three_day == 1:
@@ -207,6 +201,7 @@ def stats_msg(habit_id):
 
     return msg
 
+
 def congrats_msg(user_id):
     """ analyzes a user's stats after a success to customize the msg from 
     HaBot """
@@ -214,12 +209,12 @@ def congrats_msg(user_id):
     habit_id = get_current_habit_id(user_id)
     name = (get_user(habit_id)).name
     stats = get_stats(habit_id)
-    
+
     three_day_streaks = stats['three_day_streaks']
     current_three_day = stats['current_three_day_streak']
 
     confirm_msg = "I've tracked that for you, {}. ".format(name)
-        
+
     if current_three_day == 0:
         if three_day_streaks == 1:
             stats_msg = "Way to go! You've collected your first three-day-streak!"
@@ -251,7 +246,7 @@ def send_pause_msgs():
     """ send deactivations to any user who hasn't been active in 7 days """
 
     # current_utc_date = arrow.utcnow()
-    #for testing: 
+    #for testing:
     current_utc_hour = 18
     current_utc_date = (arrow.utcnow()).replace(hour=18)
 
@@ -264,18 +259,18 @@ def send_pause_msgs():
         tz = habit.user.tz
 
         last_success = find_last_success(habit.habit_id) #Success object
-        
+
         # if it's been more than 7 days since last_success or habit creation date:
         if (
             (last_success and (dates_week_apart(last_success.time, current_utc_date, tz)))
                 or ((not last_success) and dates_week_apart(habit.utc_time, current_utc_date, tz))
                 ):
-                
+
             pause_habit(habit.habit_id)
 
             to = habit.user.mobile
             name = habit.user.name
-                
+
             message = client.messages.create(
                 messaging_service_sid=messaging_service_sid,
                 to=to,
@@ -283,6 +278,9 @@ def send_pause_msgs():
                 body="{}, I noticed you haven't responded in a while.\
             I've gone ahead and paused this habit for you.\
             If/when you're ready to start working on this again just say 'unpause'".format(name))
+
+
+### HABIT MANAGEMENT HELPERS ###
 
 
 def pause_habit(habit_id):
@@ -302,6 +300,8 @@ def pause_msg(user_id):
 def unpause_habit(user_id):
     """ unpauses a habit that has been paused after user reponds to habit they want to unpause"""
 
+    #TODO: pull out message return to a seperate function.
+
     habit_id = get_current_habit_id(user_id)
     habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).first()
     title = habit.habit.title
@@ -317,9 +317,36 @@ def unpause_habit(user_id):
     print "habit unpaused (active == True)"
     return msg
 
-    
 
-# helper functions user management
+def add_new_habit_return_id(user_id, create_habit_id, break_habit_id, utc_time, partner_id):
+    """ sets any previous habits to current=False and adds new habit for user """
+
+    # look up any other habits user has and set current flag to false
+    previous_user_habits = UserHabit.query.filter(User.user_id == user_id).all()
+
+    if previous_user_habits:
+        for habit in previous_user_habits:
+            habit.current == False
+            db.session.add(habit)
+
+    # store to new habit to user-habits table
+    user_habit = UserHabit(user_id=user_id, create_habit_id=create_habit_id,
+        break_habit_id=break_habit_id, current=True, active=True,
+        utc_time=utc_time, partner_id=partner_id)
+
+    db.session.add(user_habit)
+
+    db.session.commit()
+
+    habit = UserHabit.query.filter(UserHabit.user_id == user_id).order_by(UserHabit.habit_id.desc()).first()
+
+    habit_id = habit.habit_id
+
+    return habit_id
+
+
+### USER MANAGEMENT HELPERS ###
+
 
 def create_user_return_id(name, mobile, tz):
     """ creates a new user and returns the assigned user_id"""
@@ -333,7 +360,32 @@ def create_user_return_id(name, mobile, tz):
     return user_id
 
 
-# helper functions for creating a new profile of factor ratings. 
+def get_user_id(mobile):
+    """ returns the user_id for a user given a phone number"""
+
+    user = User.query.filter(User.mobile == mobile).first()
+    user_id = user.user_id
+    return user_id
+
+
+def get_current_habit_id(user_id):
+    """ finds the current habit for a user """
+
+    habit = UserHabit.query.filter(UserHabit.current == True, UserHabit.user_id == user_id).one()
+    habit_id = habit.habit_id
+    return habit_id
+
+
+def get_user(habit_id):
+    """ returns the User object for any habit_id """
+
+    habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).one()
+    user = habit.user
+    return user
+
+
+### PROFILE MANAGEMENT HELPERS ###
+
 
 def create_profile_return_id(user_id, date):
     """ creates a new facor profile and returns user_factor_profile_id"""
@@ -343,12 +395,12 @@ def create_profile_return_id(user_id, date):
     db.session.commit()
     new_profile = UserProfile.query.filter(UserProfile.user_id == user_id).first()
     profile_id = new_profile.profile_id
-    
+
     return profile_id
 
 
 def create_factor_scores(profile_id, factor_scores):
-    """ creates a new record for every factor scored by user (passed through 
+    """ creates a new record for every factor scored by user (passed through
         in factor_scores dictionary """
 
     for factor, score in factor_scores.items():
@@ -358,7 +410,7 @@ def create_factor_scores(profile_id, factor_scores):
 
 
 def get_last_factor_profile(user_id):
-    """ returns the last profile (list of factor ratings as FactorRating objects) 
+    """ returns the last profile (list of factor ratings as FactorRating objects)
     for a given user_id """
 
     last_profile = UserProfile.query.filter(UserProfile.user_id == user_id).order_by(UserProfile.date.desc()).first()
@@ -370,14 +422,15 @@ def get_last_factor_profile(user_id):
         return None
 
 
-# helper functions for making recommendations
+### RECOMMENDATION HELPERS ###
+
 
 def get_recommendations(user_id):
-    """ returns a ranked list of recommended habits for the user as CreateHabit 
+    """ returns a ranked list of recommended habits for the user as CreateHabit
     objects. """
 
     # create a dictionary of the latest factor scores from the most recent profile.
-    last_factor_scores = get_last_factor_profile(user_id) 
+    last_factor_scores = get_last_factor_profile(user_id)
     factor_scores = {}
 
     for score in last_factor_scores:
@@ -385,11 +438,11 @@ def get_recommendations(user_id):
 
     # grab all habits
     habits = CreateHabit.query.all()
-    
+
     # create a dictionary of all habits to hold rankings after they're calculated
     habit_fits = {}
-    
-    for habit in habits: 
+
+    for habit in habits:
         habit_fits[habit.create_habit_id] = 0
 
     # recommend habits by determining 'fit' of each habit for user (higher = better)
@@ -413,7 +466,7 @@ def get_recommendations(user_id):
         habit_fits[create_habit_id] = habit_fit
 
     recommended_habits = []
-    
+
     for habit in habit_fits:
         if habit_fits[habit] > 0:
             ranked_habit = (habit_fits[habit], habit)
@@ -430,50 +483,26 @@ def get_recommendations(user_id):
             habit_id = habit[1]
             habit_obj = CreateHabit.query.filter(CreateHabit.create_habit_id == habit_id).first()
             ranked_habits.append(habit_obj)
-    
-        return ranked_habits # a list of CreateHabit objects
+
+        return ranked_habits
+        # a list of CreateHabit objects
 
     else:
         print "recommending deafult habits"
         return habits
 
 
-def add_new_habit_return_id(user_id, create_habit_id, break_habit_id, utc_time, partner_id):
-    """ sets any previous habits to current=False and adds new habit for user """
+### DATETIME HELPERS ####
 
-    # look up any other habits user has and set current flag to false
-    previous_user_habits = UserHabit.query.filter(User.user_id == user_id).all()
-    
-    if previous_user_habits:
-        for habit in previous_user_habits:
-            habit.current == False
-            db.session.add(habit)
-
-    # store to new habit to user-habits table
-    user_habit = UserHabit(user_id=user_id, create_habit_id=create_habit_id, 
-        break_habit_id=break_habit_id, current=True, active=True,
-        utc_time=utc_time, partner_id=partner_id)
-
-    db.session.add(user_habit)
-    
-    db.session.commit()
-
-    habit = UserHabit.query.filter(UserHabit.user_id == user_id).order_by(UserHabit.habit_id.desc()).first()
-
-    habit_id = habit.habit_id
-
-    return habit_id
-
-
-# helper functions for datetime
 
 def get_local_hour(tz):
     """ returns the curernt local hour in a time zone"""
-    
+
     time_utc = arrow.utcnow()
     time_local = time_utc.to(tz)
     local_hour = time_local.hour
     return local_hour
+
 
 def get_local_habit_hour(habit_id):
     """ returns the habit hour in the user's local time
@@ -495,12 +524,70 @@ def get_utc_hour():
     return utc_hour
 
 
-# helper functions for country and timezone information
+def dates_same(first_datetime, second_datetime, tz):
+    """ checks if two date are the same.  Returns True if so and False if not """
+
+    first = arrow.get(first_datetime)
+    second = arrow.get(second_datetime)
+    # second == most recent
+
+    if (first.to(tz)).date() == (second.to(tz)).date():
+        return True
+    else:
+        return False
+
+
+def dates_consecutive(first_datetime, second_datetime, tz):
+    """ checks if two date are consecutive.  Returns True if so and False if not """
+
+    first = arrow.get(first_datetime)
+    second = arrow.get(second_datetime) 
+    # second == most recent
+
+    diff = (first.to(tz)).date() - (second.to(tz)).date()
+
+    if diff.days == -1:
+        return True
+    else:
+        return False
+
+
+def dates_same_or_consecutive(first_datetime, second_datetime, tz):
+    """ checks if two dates are the same or consecutive"""
+
+    first = arrow.get(first_datetime)
+    second = arrow.get(second_datetime)
+    # second == most recent
+
+    if (dates_same(first, second, tz) 
+        or dates_consecutive(first, second, tz)):
+        return True
+    else:
+        return False
+
+
+def dates_week_apart(first_datetime, second_datetime, tz):
+    """ checks if two dates are more than a week apart"""
+
+    first = arrow.get(first_datetime)
+    second = arrow.get(second_datetime)
+    # second == most recent
+
+    diff = (first.to(tz)).date() - (second.to(tz)).date()
+
+    if diff.days < -7:
+        return True
+    else:
+        return False
+
+
+### COUNTRY & TIMEZONE HELPERS ###
+
 
 def sort_countries():
-    """ creates a dictionary of country names(keys) and 2-digit country codes 
+    """ creates a dictionary of country names(keys) and 2-digit country codes
     (values) and then returns a sorted list of key, value pairs as tuples in
-    alphabetical order """ 
+    alphabetical order """
 
     country_info = {}
     for country in pycountry.countries:
@@ -509,14 +596,16 @@ def sort_countries():
     sorted_countries = sorted(country_info.items())
     return sorted_countries
 
+
 def format_mobile(mobile, country_code):
-    """ returns an internatinally formatted mobile number as a string given a 
+    """ returns an internatinally formatted mobile number as a string given a
     mobile number (string) in any format and a 2-digit country code for that
     mobile number """
 
     mobile_object = phonenumbers.parse(mobile, country_code)
     mobile = phonenumbers.format_number(mobile_object, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
     return mobile
+
 
 def get_country_timezones(country_code):
     """ returns a list of timezones (in strings) for a country given the 2-digit
@@ -535,7 +624,7 @@ def get_country_timezones(country_code):
     return timezones
 
 
-# helper functions for tracking success
+### SUCCESS & STREAK MANAGEMENT HELPERS ####
 
 def get_stats(habit_id):
     """ given a habit_id produce stats for that habit at the current date/time
@@ -554,15 +643,15 @@ def get_stats(habit_id):
         (check if potential > 3 and longest < potential):
             "You ready, Sav? Suceeding today will give you a 7 day streak
             overall and a new record!"
-        
+ 
         (upon success check if current == longest):
             "Awesome job, Sav! You hit a new record streak: 7 days!"
 
         (check if potential < 3 and total < 21)
-            "You ready, Sav? 
+            "You ready, Sav?
 
         """
- 
+
     stats = {}
 
     # TODO: have one single joined query and leverage relationships. 
@@ -570,9 +659,9 @@ def get_stats(habit_id):
     tz = habit.user.tz
 
     current_time = arrow.utcnow()
-    
-    stats['total_days'] = Success.query.filter(Success.habit_id == habit_id).count() 
-    # works but provides 7L? 
+
+    stats['total_days'] = Success.query.filter(Success.habit_id == habit_id).count()
+    # works but provides 7L?
 
     # find most recent success to identify current streak
     last_success = find_last_success(habit_id)
@@ -634,6 +723,7 @@ def get_stats(habit_id):
         stats['current_three_day_streak'] = 0
 
     return stats
+
 
 def get_graph_stats(stats):
     """ provides a dictionary to jsonify in flask route that supports
@@ -756,8 +846,8 @@ def process_success(user_id, success_time):
         streak_update(habit_id, streak_id, success_id)
         print "existing streak updated"
         return success_id
-    
-        
+
+   
 def add_success_get_id(habit_id, mobile, success_time):
 
     time = success_time.format('YYYY-MM-DD HH:mm:ss ZZ')
@@ -804,16 +894,18 @@ def get_streak_id(habit_id, success_time):
     else:
         return None
 
+
 def streak_update(habit_id, streak_id, success_id):
     """ creates or updates a streak """
 
     print "trying to update streak"
-    print "values: habit_id: {}, streak_id: {}, success_id: {}".format(habit_id, streak_id, success_id)
+    print "values: habit_id: {}, streak_id: {}, success_id: {}".format(habit_id,
+        streak_id, success_id)
 
     if streak_id is None:
         # create new streak
         streak = Streak(habit_id=habit_id, start_id=success_id, end_id=success_id)
-    
+
     else:
         # update existing streak
         streak = Streak.query.filter(Streak.streak_id == streak_id).one()
@@ -821,79 +913,6 @@ def streak_update(habit_id, streak_id, success_id):
 
     db.session.add(streak)
     db.session.commit()
-
-def get_user_id(mobile):
-    """ returns the user_id for a user given a phone number"""
-
-    user = User.query.filter(User.mobile == mobile).first()
-    user_id = user.user_id
-    return user_id
-
-
-def get_current_habit_id(user_id): 
-    """ finds the current habit for a user """ 
-
-    habit = UserHabit.query.filter(UserHabit.current == True, UserHabit.user_id == user_id).one()
-    habit_id = habit.habit_id
-    return habit_id
-
-def get_user(habit_id):
-    """ returns the User object for any habit_id """
-
-    habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).one() 
-    user = habit.user
-    return user
-
-
-def dates_same(first_datetime, second_datetime, tz):
-    """ checks if two date are the same.  Returns True if so and False if not """
-
-    first = arrow.get(first_datetime)
-    second = arrow.get(second_datetime) #most recent
-
-    if (first.to(tz)).date() == (second.to(tz)).date():
-        return True
-    else:
-        return False
-
-def dates_consecutive(first_datetime, second_datetime, tz):
-    """ checks if two date are consecutive.  Returns True if so and False if not """
-
-    first = arrow.get(first_datetime)
-    second = arrow.get(second_datetime) #most recent
-
-    diff = (first.to(tz)).date() - (second.to(tz)).date()
-    
-    if diff.days == -1:
-        return True
-    else:
-        return False
-
-def dates_same_or_consecutive(first_datetime, second_datetime, tz):
-    """ checks if two dates are the same or consecutive"""
-
-    first = arrow.get(first_datetime)
-    second = arrow.get(second_datetime) #most recent
-
-    if (dates_same(first, second, tz) 
-        or dates_consecutive(first, second, tz)):
-        return True
-    else:
-        return False
-
-
-def dates_week_apart(first_datetime, second_datetime, tz):
-    """ checks if two dates are more than a week apart"""
-
-    first = arrow.get(first_datetime)
-    second = arrow.get(second_datetime) #most recent
-
-    diff = (first.to(tz)).date() - (second.to(tz)).date()
-
-    if diff.days < -7:
-        return True
-    else:
-        return False
 
 
 def connect_to_db(app):

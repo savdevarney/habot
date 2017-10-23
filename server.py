@@ -370,8 +370,9 @@ if __name__ == "__main__":
 
     # connect to db
     connect_to_db(app)
-
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.debug=True
+    app.jinja_env.auto_reload=app.debug
+    app.run(host="0.0.0.0", port=5000)
     
     # Use the DebugToolbar
     # DebugToolbarExtension(app)

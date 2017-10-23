@@ -5,6 +5,7 @@
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="https://cdn.jsdelivr.net/jquery.typeit/4.4.0/typeit.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans|Ubuntu+Mono" rel="stylesheet">
 
     <style>
 
@@ -39,7 +40,8 @@
   transition: all 0.3s ease;
 }
 .custom-radios input[type="radio"]#color-green-1 + label span {
-  background-color: #C4DB81;
+  border: 1px solid #C4DB81;
+  background-color: transparent;
 }
 .custom-radios input[type="radio"]#color-yellow-1 + label span {
   background-color: #FDCF49;
@@ -112,18 +114,46 @@ input.habit {
   display: inline-block;
 }
 
+h1, h2, h3, h4, h5 {
+  font-family: 'Ubuntu Mono', monospace;
+}
+
+p {
+  font-family: 'Open Sans', sans-serif;
+}
+
+#feature {
+  background-size: cover;
+  background: center center;
+  height: 250px;
+}
+
+
+
+#feature-overlay {
+  background: rgba(0, 255, 252, 0.65);
+  height: 250px;
+}
+
+
+#habot-txt {
+  color: white;
+}
+
+#logo {
+  position: fixed;
+  z-index: 10;
+  padding-top:15px;
+  padding-left:10px;
+}
 
 </style>
 
 </head>
 
 
-
 <body>
 
-<div id="logo">
-  <img src="/static/habot.png" height='61' width='190'></img>
-</div>
 
 {% block content %}
 

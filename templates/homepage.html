@@ -1,15 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<br>
-<br>
+<div class='container-fluid' id='feature' style="background-image: url(static/Super-robot.png)">
 
-<div class='container-fluid' align="center" style="height:150px;">
-<h2 id="habot-txt" align='center'></h2>
+    <div id='logo'>
+      <img src="/static/logo-white.png" height="61px" width="190px"></img>
+    </div>
+
+<div class='row' id='feature-overlay'>
+    <div class='col-lg' align='center'>
+        <br>
+        <br>
+        <br>
+        <br>
+        <span class='align-text-bottom'><h2 id="habot-txt" align='center'></h2></span>
+    </div>
+</div>
+
 </div>
 
 <br>
-
 
 <div class='container-fluid' align="center">
 
@@ -34,10 +44,6 @@
 </form>
 
 </div>
-
-<br>
-<br>
-<br>
 
 <!-- <div class='container'>
 <img src='/static/habot_icon.png' height='75'></img>
