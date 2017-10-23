@@ -1,14 +1,32 @@
 {% extends 'base.html' %}
 {% block content %}
+<br>
+<br>
 
-<h1> Lovely part of the world! What timezone specifically?</h1>
+<div class='container-fluid' align="center" style="height:100px;">
+<h2 id="habot-txt"></h2>
+</div>
 
 
+
+<div class='container-fluid' align="center">
+<div class='form-inline' align="center">
 {% for timezone in timezones %}
 <form action='/name' method='GET'>
     <input type="hidden" name="tz" value="{{ timezone }}">
-    <input type='submit', value="{{ timezone }}">
+    <input type='submit' class="btn btn-outline-dark" value="{{ timezone }}">
 </form>
 {% endfor %}
+</div>
+</div>
+
+<script>
+
+$('#habot-txt').typeIt({
+    strings: ["Lovely part of the world!", "What timezone specifically?"],
+    speed: 50,
+    autoStart: false
+});
+</script>
 
 {% endblock %}

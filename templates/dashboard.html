@@ -1,21 +1,34 @@
 {% extends 'base.html' %}
 {% block content %}
+<br>
+<br>
 
-<h1>Hi, {{ user_habit.user.name }}!</h1>
-<h3>You're doing a great job!</h3>
+<div class='container-fluid' align="center" style="height:100px;">
+<h2 id="habot-txt"></h2>
+</div>
 
-<h3>Your habit: {{ user_habit.habit.title }} </h3>
+<b4>
+
+<div class='container-fluid' align="center">
+<h3>Your habit:</h3>
+<h3>{{ user_habit.habit.title }}</h3>
+</div>
+<b4>
+
+<div class='container-fluid' align='center'>
 <div id="chart"></div>
-<p>Total 3-day streaks: {{ stats["three_day_streaks"] }} </p>
-<p>Current 3-day streak: {{ stats["current_three_day_streak"] }} </p>
-<br>
-<br>
-<br>
+</div>
+
 <br>
 <br>
 
-<p>Total days: {{ stats["total_days"] }}
-<p>Current streak: {{ stats["current_streak"] }} </p>
+<div class='container-fluid' align='center'>
+<p>Total 3-day streaks: {{ stats["three_day_streaks"] }} </p>
+<p>Current 3-day streak: {{ stats["current_three_day_streak"] }}</p>
+<p>Total days: {{ stats["total_days"] }}</p>
+</div>
+
+<!-- <p>Current streak: {{ stats["current_streak"] }} </p>
 <p>Longest streak: {{ stats["longest_streak"] }} </p>
 <p>Potential streak: {{ stats["potential_streak"] }} </p>
 
@@ -26,7 +39,7 @@
     <li> {{ score.factor.title }}: {{ score.score }}
     {% endfor %}
     </ul>
-{% endif %}
+{% endif %} -->
 
 <!-- D3 sample (meta and link go in head)-->
 
@@ -121,6 +134,13 @@
       })(window.d3);
 
     })
+
+
+$('#habot-txt').typeIt({
+    strings: ["Hi, {{ user_habit.user.name }}!", "You're doing a great job!"],
+    speed: 50,
+    autoStart: false
+});
 
     </script>
 

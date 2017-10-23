@@ -281,8 +281,8 @@ def send_pause_msgs():
                 to=to,
                 from_=twilio_from,
                 body="{}, I noticed you haven't responded in a while.\
-                I've gone ahead and paused this habit for you.\
-                If/when you're ready to start working on this again just say 'unpause'".format(name))
+            I've gone ahead and paused this habit for you.\
+            If/when you're ready to start working on this again just say 'unpause'".format(name))
 
 
 def pause_habit(habit_id):

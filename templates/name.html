@@ -1,11 +1,28 @@
 {% extends 'base.html' %}
 {% block content %}
+<br>
+<br>
 
-<h2>What's your name?</h2>
+<div class='container-fluid' align="center" style="height:100px;">
+<h2 id="habot-txt"></h2>
+</div>
 
-<form action='/factors', method='GET'>
+<div class='container-fluid' align='center'>
+<form action='/factors' method='GET'>
     <input type='text' name='name'>
-    <input type='submit' value='thats me!'>
+    <br>
+    <br>
+    <input type='submit' class="btn btn-outline-dark" value='thats me!'>
 </form>
+</div>
+
+<script>
+
+$('#habot-txt').typeIt({
+    strings: ["What's your name?"],
+    speed: 50,
+    autoStart: false
+});
+</script>
 
 {% endblock %}

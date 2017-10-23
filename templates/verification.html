@@ -1,9 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
+<br>
+<br>
 
-<h2>I've sent you a code to verify your number. <br>
-    When you receive it, enter it here.</h2>
 
+<div class='container-fluid' align="center" style="height:100px;">
+<h2 id="habot-txt"></h2>
+</div>
+
+<div class='container-fluid' align="center">
 <ul>
 {% for message in get_flashed_messages() %}
 <li> {{ message }} </li>
@@ -12,7 +17,20 @@
 
 <form action='/signin', method='GET'>
     <input type='text' name='code'>
-    <input type='submit' value='Verify me!'>
+    <br>
+    <br>
+    <input type='submit' class="btn btn-outline-dark" value='Verify me!'>
 </form>
+</div>
+
+<script>
+
+$('#habot-txt').typeIt({
+    strings: ["I've sent you a code to verify your number.",  "Enter it here."],
+    speed: 50,
+    autoStart: false
+});
+
+</script>
 
 {% endblock %}

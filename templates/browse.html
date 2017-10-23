@@ -1,9 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
+<br>
+<br>
 
-<h2>Which habit would you like to work on?</h2>
+<div class='container-fluid' align="center" style="height:100px;">
+<h2 id="habot-txt"></h2>
+</div>
 
-<div class='form-inline'>
+<div class='container-fluid' align="center">
+
+<div class='form-inline' align="center">
 {% for habit in habits %}
 <form action='/time' method='GET'>
 <div id='habit-tile'>
@@ -13,6 +19,15 @@
 </form>
 {% endfor %}
 </div>
+</div>
 
+<script>
 
+$('#habot-txt').typeIt({
+    strings: ["Which habit would you like to work on?"],
+    speed: 50,
+    autoStart: false
+});
+
+</script>
 {% endblock %}

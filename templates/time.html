@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
+<br>
+<br>
 
-<h2>Great choice! <br>
-    Approximately what time do you plan on doing that? <br>
-    I'll check in with you at that time.</h2>
-
-
+<div class='container-fluid' align="center" style="height:100px;">
+<h2 id="habot-txt"></h2>
+</div>
 
 {% if hour == 0 %} selected="selected" {% endif %}
+<div class='container-fluid' align="center">
 
-
-<form action='/confirm', method='GET'>
+<form action='/confirm' method='GET' align='center'>
     <select name='hour'>
         <option value='0'{% if hour == 0 %} selected="selected" {% endif %}>12 am</option>
         <option value='1'{% if hour == 1 %} selected="selected" {% endif %}>1 am</option>
@@ -37,16 +37,21 @@
         <option value='22'{% if hour == 22 %} selected="selected" {% endif %}>10 pm</option>
         <option value='23'{% if hour == 23 %} selected="selected" {% endif %}>11 pm</option>
     </select>
-<!--     <select name='tz'>
-        <option value='US/Alaska'>Alaska</option>
-        <option value='US/Eastern'>Eastern</option>
-        <option value='US/Hawaii'>Hawaii</option>
-        <option value='US/Central'>Central</option>
-        <option value='US/Mountain'>Mountain</option>
-        <option value='US/Pacific'>Pacific</option>
-    </select> -->
-    <input type='submit'>
+    <br>
+    <br>
+    <input type='submit' class="btn btn-outline-dark" value="sounds good">
 </form>
+</div>
+
+<script>
+
+$('#habot-txt').typeIt({
+    strings: ["Great choice!", "What time should I remind you?"],
+    speed: 50,
+    autoStart: false
+});
+
+</script>
 
 {% endblock %}
 

@@ -1,8 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
+<br>
+<br>
 
-<h2> In order for me to recommend the best habits for you, tell me how you're doing right now </h2>
+<div class='container-fluid' align="center" style="height:50px;">
+<h2 id="habot-txt"></h2>
+</div>
 
+<div class='container-fluid' align="center">
 <form action='/signup' method='GET'>
 
     <p><b>Mind: </b>Your overall mood and emotional health.</p>
@@ -215,9 +220,20 @@
 
     </fieldset>
 
-<input type="submit", value="feels about right at the mo">
+<input type="submit" class="btn btn-outline-dark" value="feels about right at the mo">
 
 </form>
+</div>
+
+<script>
+
+$('#habot-txt').typeIt({
+    strings: ["Tell me how you've been doing."],
+    speed: 50,
+    autoStart: false
+});
+
+</script>
 
 
 {% endblock %}

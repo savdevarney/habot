@@ -1,16 +1,23 @@
 {% extends 'base.html' %}
 {% block content %}
+<br>
+<br>
 
-<h2> Here are some habits I'd recommend for you <br> 
-    based on how things are going for you right now</h2>
+<div class='container-fluid' align="center" style="height:100px;">
+<h2 id="habot-txt"></h2>
+</div>
+
+<div class='container-fluid' align="center">
 
 <div id='habits-div' class='form-inline'>
     </div>
 
 
-<a id="get-recs" href="/get-recs.json">more recommendations</a>
+<a id="get-recs" href="/get-recs.json">show more recommendations</a>
 <br>
 <a href="/habits">browse all habits</a>
+
+</div>
 
 <script>
 
@@ -42,6 +49,13 @@ function updateRecs(evt) {
 $('#get-recs').on('click', updateRecs);
 
 firstRecs()
+
+
+$('#habot-txt').typeIt({
+    strings: ["I've selected a few habits for you.", "How do these feel to you?"],
+    speed: 50,
+    autoStart: false
+});
 
 </script>
 

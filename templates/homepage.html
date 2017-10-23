@@ -2,16 +2,19 @@
 {% block content %}
 
 <br>
-<b3>
 <br>
-<div class='.container-fluid'>
-<h1>Hi, I'm HaBot.</h1>
-<h2> I help you create new habits</h2>
-<h2> What's your phone number? </h2>
+
+<div class='container-fluid' align="center" style="height:150px;">
+<h2 id="habot-txt" align='center'></h2>
 </div>
 
-<div class='.container-fluid'>
+<br>
+
+
+<div class='container-fluid' align="center">
+
 <form action='/verify', method='GET'>
+    
     <select name="country_code">
         {% for item in sorted_countries %}
         <option value="{{ item[1] }}" 
@@ -20,8 +23,14 @@
         </option>
         {% endfor %}
     </select>
+    <br>
+    <br>
+
     <input type='text' name='mobile'>
-    <input type='submit' value='Lets do this!'>
+    <br>
+    <br>
+
+    <input type='submit' class="btn btn-outline-dark" value='Lets do this!'>
 </form>
 
 </div>
@@ -30,7 +39,6 @@
 <br>
 <br>
 
-
 <!-- <div class='container'>
 <img src='/static/habot_icon.png' height='75'></img>
 <h2><b><i>I'll help you ...</i></b></h2>
@@ -38,27 +46,45 @@
 
 <br>
 <br>
-<br>
 
-<div class='.container-fluid'>
+<div class='container-fluid'>
     <div class="row">
 
-        <div class="col-sm">
+        <div class="col-sm" align="center">
         <b>Find Habits</b><br>
-        I'll recommend some potential micro habits based on what's going on in your life.  Micro habits are something specific you can do in 30 seconds or less.  
+        I'll recommend micro-habits based on what's going on in your life.  Micro-habits are something specific you can do in 30 seconds or less.  
         </div>
 
-        <div class="col-sm">
+        <div class="col-sm" align="center">
         <b>Track Progress</b><br>
-        I'll reach out every day to send reminders.  When you respond with a '#yes', I'll track it for you. I'll also do my best to cheer you on along thew ay :) 
+        I'll reach out every day with a reminder.  I'll track your success when you tell me to. I'll also do my best to cheer you on along the way :) 
         </div>
 
-        <div class="col-sm">
+        <div class="col-sm" align="center">
         <b>Create New Behaviors</b><br>
-        It takes about 21 days to habituate almost anything.  But consistency is important so I track every '3-day streak' you have and help you get to at least 7.   
+        Creating a habit takes about 21 days. Because consistency is key, I track every '3-day streak' you have and help you reach at least 7. Let's do this!  
         </div>
 
     </div>
 </div>
+
+<br>
+<br>
+<br>
+
+<div class='container-fluid' align="center">
+<a href="/habits">see all micro-habits</a>
+</div>
+
+
+<script>
+
+$('#habot-txt').typeIt({
+    strings: ["Hi, I'm HaBot.",  "I help you create new habits.",  "What's your phone number?"],
+    speed: 50,
+    autoStart: false
+});
+
+</script>
 
 {% endblock %}
