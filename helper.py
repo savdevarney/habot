@@ -113,8 +113,8 @@ def send_habit_intro_msg(user_id):
 
     reminder = None
     if len(habits) == 1:
-        reminder = "Let me know when you're successful and I'll track your \
-    progress." + chart_increasing + "To help me recognize your success, put a #\
+        reminder = " Let me know when you're successful and I'll track your \
+    progress. " + chart_increasing + " To help me recognize your success, put a #\
     in front of your msg like this: '#I did it, Habot!'' or '#yes!'" + oncoming_fist
     
     else: 
@@ -371,7 +371,7 @@ def get_user_id(mobile):
 def get_current_habit_id(user_id):
     """ finds the current habit for a user """
 
-    habit = UserHabit.query.filter(UserHabit.current == True, UserHabit.user_id == user_id).one()
+    habit = UserHabit.query.filter(UserHabit.current == True, UserHabit.user_id == user_id).first()
     habit_id = habit.habit_id
     return habit_id
 
@@ -778,7 +778,7 @@ def get_graph_stats(stats):
 
         graph_stats['num_streaks_colors_domain'].extend(['1x3-day', '2x3-day', '3x3-day', '4x3-day', '5x3-day', '6x3-day', '7x3-day', '8x3-day', '9x3-da7'])
         graph_stats['num_streaks_colors_range'].extend(['#DFF2B4', '#AEDFB6', '#79CBBC', '#41B2C2', '#228BBC', '#2258A5', '#20388F','#182C78','#081D57'])
-        graph_stats['num_streaks_stroke'].extend(['transparent'])
+        graph_stats['num_streaks_stroke'].extend(['#D8D8D8'])
 
     # configure color and stroke for outter circle (num_days / 3 in 3-day streak)
     if num_days == 1:

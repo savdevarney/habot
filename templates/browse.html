@@ -13,6 +13,8 @@
         <br>
         <br>
         <br>
+        <br>
+        <br>
         <span class='align-text-bottom'><h2 id="habot-txt" align='center'></h2></span>
     </div>
 </div>
@@ -22,13 +24,12 @@
 <br>
 
 <div class='container-fluid' align="center">
-
-<div class='form-inline' align="center">
+<div class='form-inline justify-content-center' align="center">
 {% for habit in habits %}
 <form action='/time' method='GET'>
 <div id='habit-tile'>
     <input type="hidden" name="habit_id" value="{{ habit.create_habit_id }}">
-    <input class="habit" type='submit' value="{{ habit.title }}: {{ habit.description }}">
+    <input class="habit btn btn-outline-dark btn-large" type='submit' value="{{ habit.title }}: {{ habit.description }}">
 </div>
 </form>
 {% endfor %}

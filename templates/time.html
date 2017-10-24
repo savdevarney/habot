@@ -13,6 +13,7 @@
         <br>
         <br>
         <br>
+        <br>
         <span class='align-text-bottom'><h2 id="habot-txt" align='center'></h2></span>
     </div>
 </div>
@@ -22,9 +23,10 @@
 <br>
 {% if hour == 0 %} selected="selected" {% endif %}
 <div class='container-fluid' align="center">
-
+<br>
+<div class='col-6 center-block' align='center'>
 <form action='/confirm' method='GET' align='center'>
-    <select class="custom-select" name='hour'>
+    <select class="form-control" name='hour'>
         <option value='0'{% if hour == 0 %} selected="selected" {% endif %}>12 am</option>
         <option value='1'{% if hour == 1 %} selected="selected" {% endif %}>1 am</option>
         <option value='2'{% if hour == 2 %} selected="selected" {% endif %}>2 am</option>
@@ -50,7 +52,7 @@
         <option value='22'{% if hour == 22 %} selected="selected" {% endif %}>10 pm</option>
         <option value='23'{% if hour == 23 %} selected="selected" {% endif %}>11 pm</option>
     </select>
-    <br>
+    </div>
     <br>
     <input type='submit' class="btn btn-outline-dark" value="sounds good">
 </form>

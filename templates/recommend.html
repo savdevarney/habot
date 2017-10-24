@@ -13,6 +13,7 @@
         <br>
         <br>
         <br>
+        <br>
         <span class='align-text-bottom'><h2 id="habot-txt" align='center'></h2></span>
     </div>
 </div>
@@ -22,14 +23,16 @@
 <br>
 
 <div class='container-fluid' align="center">
+<br>
 
-<div id='habits-div' class='form-inline'>
+<div id='habits-div' class='form-inline justify-content-center'>
     </div>
 
-
-<a id="get-recs" href="/get-recs.json">show more recommendations</a>
 <br>
-<a href="/habits">browse all habits</a>
+<br>
+<a id="get-recs" href="/get-recs.json">show more recommendations</a>
+<br><br>
+<a href="/habits">browse all tiny habits</a>
 
 </div>
 
@@ -46,7 +49,7 @@ function showRecs(results) {
         console.log(habit_id)
         var title = result[habit_id]["title"];
         var description = result[habit_id]["description"];
-        var div = "<form action='/time' method='GET'><div id='habit-tile'><input type='hidden' name='habit_id' value=" +  habit_id + ">" + "<input type='submit' class='habit' value=" + "'" + title + ": " + description + "'" + "></div></form>";
+        var div = "<form action='/time' method='GET'><div id='habit-tile'><input type='hidden' name='habit_id' value=" +  habit_id + ">" + "<input type='submit' class='habit btn btn-outline-dark btn-large' value=" + "'" + title + ": " + description + "'" + "></div></form>";
         $('#habits-div').append(div);
     }
 }

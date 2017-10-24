@@ -13,6 +13,8 @@
         <br>
         <br>
         <br>
+        <br>
+        <br>
         <span class='align-text-bottom'><h2 id="habot-txt" align='center'></h2></span>
     </div>
 </div>
@@ -125,9 +127,9 @@
           .attr('d', arc1)
           .attr('stroke', function(d, i) {
             return color3(i);
-          })
-          .attr('stroke-dasharray', "5,5")
-          .attr('fill', function(d, i) { 
+          },)
+          .attr('stroke-width', "2")
+          .attr('fill', function(d, i) {
             return color1(i);
           });
 
@@ -137,7 +139,7 @@
           .append('path')
           .attr('d', arc2)
           .attr('stroke', data['num_streaks_stroke'][0])
-          .attr('stroke-dasharray', "5, 5")
+          .attr('stroke-width', "2")
           .attr('fill', function(d, i) { 
             return color2(i);
           });

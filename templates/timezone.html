@@ -13,6 +13,8 @@
         <br>
         <br>
         <br>
+        <br>
+        <br>
         <span class='align-text-bottom'><h2 id="habot-txt" align='center'></h2></span>
     </div>
 </div>
@@ -23,11 +25,12 @@
 
 
 <div class='container-fluid' align="center">
-<div class='form-inline' align="center">
+<br>
+<div class='form-inline justify-content-center' align="center">
 {% for timezone in timezones %}
 <form action='/name' method='GET'>
     <input type="hidden" name="tz" value="{{ timezone }}">
-    <input type='submit' class="btn btn-outline-dark" value="{{ timezone }}">
+    <input type='submit' id='timezones' class="btn btn-outline-dark" value="{{ timezone }}">
 </form>
 {% endfor %}
 </div>
