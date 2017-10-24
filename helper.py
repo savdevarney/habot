@@ -71,7 +71,7 @@ def send_welcome_msg(user_id):
         messaging_service_sid=messaging_service_sid,
         to=mobile,
         from_=twilio_from,
-        body="Hello, {}! ".format(name) + "HaBot here." + robot + purple_heart \
+        body="Hello, {}! ".format(name) + "Habot here." + robot + purple_heart \
         + " I feel honored you've choosen me to help you form new habits." 
     + folded_hands + "You can create a new habit with ~ 21 days of consistent effort.\
     That's why I help you track 'streaks' (consecutive days of success).\
@@ -115,7 +115,7 @@ def send_habit_intro_msg(user_id):
     if len(habits) == 1:
         reminder = "Let me know when you're successful and I'll track your \
     progress." + chart_increasing + "To help me recognize your success, put a #\
-    in front of your msg like this: '#I did it, haBot!'' or '#yes!'" + oncoming_fist
+    in front of your msg like this: '#I did it, Habot!'' or '#yes!'" + oncoming_fist
     
     else: 
         reminder = "You know the drill, don't forget the #!"
@@ -132,7 +132,7 @@ def send_habit_intro_msg(user_id):
 
 
 def send_daily_msg():
-    """ sends daily msg from HaBot - either daily reminder or deactivation"""
+    """ sends daily msg from Habot - either daily reminder or deactivation"""
 
     # current_utc_date = arrow.utcnow()
     ### for testing: 
@@ -163,7 +163,7 @@ def send_daily_msg():
                 messaging_service_sid=messaging_service_sid,
                 to=to,
                 from_=twilio_from,
-                body=  wave + ",{}! HaBot here. You're working on {}. {}\
+                body=  wave + ",{}! Habot here. You're working on {}. {}\
             Let me know when you're successful & remember the #.\
             I believe in you!".format(name, habit_title, msg))
 
@@ -175,7 +175,7 @@ def send_daily_msg():
 
 def stats_msg(habit_id):
     """ analyzes a user's stats for a given habit and returns the most
-    motivating message to include in the daily msg from HaBot"""
+    motivating message to include in the daily msg from Habot"""
 
     stats = get_stats(habit_id)
     three_day_streaks = stats['three_day_streaks']
@@ -204,7 +204,7 @@ def stats_msg(habit_id):
 
 def congrats_msg(user_id):
     """ analyzes a user's stats after a success to customize the msg from 
-    HaBot """
+    Habot """
 
     habit_id = get_current_habit_id(user_id)
     name = (get_user(habit_id)).name
@@ -284,7 +284,7 @@ def send_pause_msgs():
 
 
 def pause_habit(habit_id):
-    """ deactivates a user_habit so they don't receive messages from habot anymore """
+    """ deactivates a user_habit so they don't receive messages from Habot anymore """
 
     habit = UserHabit.query.filter(UserHabit.habit_id == habit_id).first()
     habit.active = False
@@ -294,7 +294,7 @@ def pause_habit(habit_id):
 
 
 def pause_msg(user_id):
-    """ returns a puase message for habot to send"""
+    """ returns a puase message for Habot to send"""
 
 
 def unpause_habit(user_id):
@@ -919,7 +919,7 @@ def connect_to_db(app):
     """Connect the database to the Flask app."""
 
     # Configure to use the PstgreSQL database.
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///habot'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///Habot'
     app.config['SQLALCHEMY_ECHO'] = True
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app

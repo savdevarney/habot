@@ -1,17 +1,30 @@
 {% extends 'base.html' %}
 {% block content %}
-<br>
-<br>
+<div class='container-fluid' id='feature' style="background-image: url(static/robot-clock.jpg)">
 
-<div class='container-fluid' align="center" style="height:100px;">
-<h2 id="habot-txt"></h2>
+    <div id='logo'>
+      <img src="/static/logo-white.png" height="61px" width="190px"></img>
+    </div>
+
+<div class='row' id='feature-overlay'>
+    <div class='col-lg' align='center'>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <span class='align-text-bottom'><h2 id="habot-txt" align='center'></h2></span>
+    </div>
 </div>
 
+</div>
+
+<br>
 {% if hour == 0 %} selected="selected" {% endif %}
 <div class='container-fluid' align="center">
 
 <form action='/confirm' method='GET' align='center'>
-    <select name='hour'>
+    <select class="custom-select" name='hour'>
         <option value='0'{% if hour == 0 %} selected="selected" {% endif %}>12 am</option>
         <option value='1'{% if hour == 1 %} selected="selected" {% endif %}>1 am</option>
         <option value='2'{% if hour == 2 %} selected="selected" {% endif %}>2 am</option>

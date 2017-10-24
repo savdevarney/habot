@@ -22,28 +22,29 @@
 <br>
 
 <div class='container-fluid' align="center">
+    <form action='/verify', method='GET'>
+            <div class='col-6 center-block' align='center'>
+                <select class="form-control" name="country_code">
+                    {% for item in sorted_countries %}
+                    <option value="{{ item[1] }}" 
+                    {% if item[1] == default_country %} selected="selected" {% endif %}>
+                    {{ item[0] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <br>
 
-<form action='/verify', method='GET'>
-    
-    <select name="country_code">
-        {% for item in sorted_countries %}
-        <option value="{{ item[1] }}" 
-            {% if item[1] == default_country %} selected="selected" {% endif %}>
-            {{ item[0] }}
-        </option>
-        {% endfor %}
-    </select>
-    <br>
-    <br>
-
-    <input type='text' name='mobile'>
-    <br>
-    <br>
-
-    <input type='submit' class="btn btn-outline-dark" value='Lets do this!'>
-</form>
-
+            <div class='col-6 center-block' align='center'>
+                <input type='text' class="form-control" name='mobile'>
+            </div>
+            <br>
+            <div class='col-6 center-block' align='center'>
+                <input type='submit' class="btn btn-outline-dark" value='Lets do this!'>
+            </div>
+    </form>
 </div>
+
 
 <!-- <div class='container'>
 <img src='/static/habot_icon.png' height='75'></img>
@@ -86,7 +87,7 @@
 <script>
 
 $('#habot-txt').typeIt({
-    strings: ["Hi, I'm HaBot.",  "I help you create new habits.",  "What's your phone number?"],
+    strings: ["Hi, I'm Habot.",  "I help you create new habits.",  "What's your phone number?"],
     speed: 50,
     autoStart: false
 });

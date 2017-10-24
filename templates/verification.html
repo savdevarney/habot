@@ -30,13 +30,16 @@
 {% endfor %}
 </ul>
 
+<br>
 <form action='/signin', method='GET'>
-    <input type='text' name='code'>
-    <br>
+    <div class='col-6 center-block' align='center'>
+        <input type='text' class="form-control"  name='code'>
+    </div>
     <br>
     <input type='submit' class="btn btn-outline-dark" value='Verify me!'>
 </form>
 </div>
+
 
 <script>
 
