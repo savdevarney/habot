@@ -3,10 +3,11 @@ health bot for creating habits
 
 Habot is a coach for creating daily healthy habits through a conversational interface.
 
-As you’re onboarded with Habot, you rate how well you’re doing in certain life areas. 
-Habot then recommends a set of habits that would be best to work on. 
-After committing to a habit, you track progress with Habot every day through delightful text message exchanges.   
-You earn a new streak every 3 consecutive successful days and are encouraged to collect at least 7 streaks to create the new habit (21 days in total).
+As you’re onboarded with Habot, you rate how well you’re doing in certain life areas. Habot then recommends a set of habits that would be best to work on. After committing to a habit, you track progress with Habot every day through delightful text message exchanges. You earn a new streak every 3 consecutive successful days and are encouraged to collect at least 7 streaks to create the new habit (21 days in total).
+
+Habits included are built off of BJ Fogg's Tiny Habit principles (http://tinyhabits.com/) - that is they are:
+- incredibly specific
+- can be done in 30 seconds or less
 
 During onboarding, users provide: 
 - mobile phone number + country
@@ -15,10 +16,6 @@ During onboarding, users provide:
 - ratings for 'profiles' (health categories: mind, sleep, relationships, performance, movement, nutrition)
 - habit selection
 - time to be reminded
-
-Habits included are built off of BJ Fogg's Tiny Habit principles (http://tinyhabits.com/) - that is they are:
-- incredibly specific
-- can be done in 30 seconds or less
 
 Other features: 
 - 'passwordless' sign up and sign in via a 6 digit randomly generated pin sent to verify mobile number
@@ -62,3 +59,8 @@ Currently working on:
 - preparations for deployment to habot.me
 
 If you have examples of Tiny Habits you would like added to Habot, please email me!
+
+Video of current local build: 
+
+https://drive.google.com/open?id=0BxzJpyba64UfX2pHd2NpUk5wMm8
+
