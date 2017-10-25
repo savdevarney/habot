@@ -163,9 +163,7 @@ def send_daily_msg():
                 messaging_service_sid=messaging_service_sid,
                 to=to,
                 from_=twilio_from,
-                body=  wave + ",{}! Habot here. You're working on {}. {}\
-            Let me know when you're successful & remember the #.\
-            I believe in you!".format(name, habit_title, msg))
+                body= wave + ",{}! Habot here. You're working on {}.".format(name, habit_title) + msg + "Let me know when you're successful & remember the #. I believe in you!")
 
                 print "message was: {}".format(message)
                 print(message.sid)
@@ -182,18 +180,18 @@ def stats_msg(habit_id):
     current_three_day = stats['current_three_day_streak']
 
     if three_day_streaks > 1:
-        streak_msg = "You have {} three-day-streaks".format(three_day_streaks)
+        streak_msg = " You already have {} three-day-streaks - nice! ".format(three_day_streaks) + party_popper
     elif three_day_streaks == 1:
-        streak_msg = "Way to go! You've alredy collected your first three-day-streak!"
+        streak_msg = " Way to go! You've alredy collected your first three-day-streak!"
     else:
-        streak_msg = "Let's help you earn your first three-day-streak with a success today."
+        streak_msg = " Let's help you earn your first three-day-streak with a success today."
 
     if current_three_day == 0:
-        streak_prompt = "Start a new three-day-streak with a success today!"
+        streak_prompt = " Start a new three-day-streak with a success today!"
     elif current_three_day == 1:
-        streak_prompt = "Let's keep your streak going with a success today!"
+        streak_prompt = " Let's keep your streak going with a success today!"
     elif current_three_day == 2:
-        streak_prompt = "You're one success away from a new three day streak!"
+        streak_prompt = " You're one success away from a new three day streak!"
     else:
         streak_prompt = " "
 
@@ -229,7 +227,7 @@ def congrats_msg(user_id):
         if three_day_streaks == 0:
             stats_msg = "Great job! You're on your way to your first three-day-streak! I'll check back in tomorrow."
         else:
-            stats_msg = "You're now on day 1 of your next three-day-streak! I believe in you!".format(three_day_streaks)
+            stats_msg = "You're on your way to your next three-day-streak! I'll check back in tomorrow. Have a lovely day.".format(three_day_streaks)
     elif current_three_day == 2:
         if three_day_streaks == 0:
             stats_msg = "You're one success away from a new three-day-streak!"
@@ -275,9 +273,7 @@ def send_pause_msgs():
                 messaging_service_sid=messaging_service_sid,
                 to=to,
                 from_=twilio_from,
-                body="{}, I noticed you haven't responded in a while.\
-            I've gone ahead and paused this habit for you.\
-            If/when you're ready to start working on this again just say 'unpause'".format(name))
+                body="{}, I noticed you haven't responded in a while. I've gone ahead and paused this habit for you. If/when you're ready to start working on this again just say 'unpause'".format(name))
 
 
 ### HABIT MANAGEMENT HELPERS ###
@@ -785,13 +781,13 @@ def get_graph_stats(stats):
         graph_stats['num_day_colors'].extend(
             ["{}".format(color), 'transparent', 'transparent'])
         graph_stats['num_day_strokes'].extend(
-            ['transparent', '#FCFCFC', '#FCFCFC'])
+            ['#FCFCFC', '#FCFCFC', '#FCFCFC'])
 
     elif num_days == 2:
         graph_stats['num_day_colors'].extend(
             ["{}".format(color), "{}".format(color), 'transparent'])
         graph_stats['num_day_strokes'].extend(
-            ['transparent', 'transparent', '#FCFCFC'])
+            ['#FCFCFC', '#FCFCFC', '#FCFCFC'])
 
     elif (num_days == 0) and (num_streaks == 0):
     # scenario of no data:
@@ -804,7 +800,7 @@ def get_graph_stats(stats):
         graph_stats['num_day_colors'].extend(
             ['transparent', 'transparent', 'transparent'])
         graph_stats['num_day_strokes'].extend(
-            ['#FCFCFC', 'transparent', 'transparent'])
+            ['#FCFCFC', '#FCFCFC', '#FCFCFC'])
 
     print stats['current_three_day_streak']
     return graph_stats
@@ -919,7 +915,7 @@ def connect_to_db(app):
     """Connect the database to the Flask app."""
 
     # Configure to use the PstgreSQL database.
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///Habot'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///habot'
     app.config['SQLALCHEMY_ECHO'] = True
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app
