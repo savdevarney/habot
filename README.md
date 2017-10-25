@@ -1,5 +1,4 @@
 # habot
-health bot for creating habits
 
 Habot is a coach for creating daily healthy habits through a conversational interface.
 
