@@ -2,4 +2,7 @@ env/
 *.pyc
 secrets.sh
 .DS_Store
-data/
+data/users.csv
+data/user-habits.csv
+data/successes.csv
+data/streaks.csv
