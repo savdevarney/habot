@@ -63,3 +63,9 @@ Video of current local build:
 
 https://drive.google.com/open?id=0BxzJpyba64UfX2pHd2NpUk5wMm8
 
+Habot data model: 
+
+https://github.com/savdevarney/habot/blob/master/Habot%20Data%20Model.png
+
+
+
