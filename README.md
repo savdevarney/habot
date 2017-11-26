@@ -12,21 +12,23 @@ If you have examples of Tiny Habits you would like added to Habot, please email 
 
 ## Current features:
 
-### Onboarding data: 
-- Mobile phone number + country
-- Timezone
-- Name
-- Ratings for 'profile' (health categories: mind, sleep, relationships, performance, movement, nutrition)
-- Habit selection
-- Time to be reminded
+### Onboarding:
+- Mobile phone number + country.
+- Timezone.
+- Name.
+- Ratings for 'profile' (health categories: mind, sleep, relationships, performance, movement, nutrition).
+- Habit selection.
+- Time to be reminded.
 
-### Other 
-- 'Passwordless' sign up and sign in via a 6 digit randomly generated pin sent to verify mobile number
-- Data visualization to track progress toward 3 day streaks and number of 3-day streaks
+### Signin
+- 'Passwordless' sign up and sign in via a 6 digit randomly generated pin sent to verify mobile number.
 
-### Habot conversation features:
-- Daily reminders sent @ specified time
-- Success tracking via reply with '#yes'
+### Dashboard
+- Data visualization to track progress toward 3 day streaks and number of 3-day streaks (with encouragement to collect 7 x 3-day streaks or 21 days total).
+
+### Conversation features:
+- Daily reminders sent @ specified time in local time zone.
+- Success tracking via reply with '#yes'.
 - Pausing of habit tracking if inactive for > 7 days.  Reactivation with 'unpause'
 - Small talk :)
 
