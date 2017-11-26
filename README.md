@@ -8,29 +8,33 @@ Habits included are built off of BJ Fogg's Tiny Habit principles (http://tinyhab
 - incredibly specific
 - can be done in 30 seconds or less
 
-During onboarding, users provide: 
-- mobile phone number + country
-- timezone
-- name
-- ratings for 'profiles' (health categories: mind, sleep, relationships, performance, movement, nutrition)
-- habit selection
-- time to be reminded
+If you have examples of Tiny Habits you would like added to Habot, please email me!
 
-Other features: 
-- 'passwordless' sign up and sign in via a 6 digit randomly generated pin sent to verify mobile number
-- data visualization to track progress toward 3 day streaks and number of 3-day streaks
+## Current features:
 
-Habot conversation features:
-- daily reminders
-- success tracking via reply with '#yes'
-- 'pausing' of habit tracking if inactive for > 7 days.  Reactivation with 'unpause'
-- small talk :)
+### Onboarding data: 
+- Mobile phone number + country
+- Timezone
+- Name
+- Ratings for 'profile' (health categories: mind, sleep, relationships, performance, movement, nutrition)
+- Habit selection
+- Time to be reminded
 
-API integrations:
+### Other 
+- 'Passwordless' sign up and sign in via a 6 digit randomly generated pin sent to verify mobile number
+- Data visualization to track progress toward 3 day streaks and number of 3-day streaks
+
+### Habot conversation features:
+- Daily reminders sent @ specified time
+- Success tracking via reply with '#yes'
+- Pausing of habit tracking if inactive for > 7 days.  Reactivation with 'unpause'
+- Small talk :)
+
+### API integrations:
 - Twilio
 - DialogFlow
 
-Tech stack:
+### Tech stack:
 - PostgreSQL
 - SQL Alchemy
 - Python
@@ -42,7 +46,7 @@ Tech stack:
 - HTML
 - JavaScript
 
-Libraries utilized:
+### Libraries utilized:
 - schedule
 - arrow
 - phonenumbers
@@ -52,22 +56,23 @@ Libraries utilized:
 - D3
 - TypeIt
 
-Currently working on:
+## Next Features:
+- testing framework that forces specific servertime to automate test user cases 
 - handling all errors during sign up flow
-- fixes with the scheduling utility
+- fixes with the scheduling utility / thread
 - preparations for deployment to habot.me
 
-If you have examples of Tiny Habits you would like added to Habot, please email me!
-
-Video of current local build: 
+## Video of current local build: 
 
 https://drive.google.com/open?id=0BxzJpyba64UfX2pHd2NpUk5wMm8
 
-Habot data model: 
+## Data model: 
 
 ![data model](./Habot%20Data%20Model.png)
 
-
-
+## Notes on cloning: 
+1. You'll need a Twilio and DialogFlow account. 
+2. At a minimum, your DialogFlow agent needs to be programmed to recognize '#yes' and 'unpause'.
+3. To process user responses, configure DialogFlow for fulfillment.  I used ngrok to create a webook at '/'.
 
 
