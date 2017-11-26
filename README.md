@@ -1,5 +1,3 @@
-# habot
-
 ![habot](./static/habot.png)
 
 Habot is a coach for creating daily healthy habits through a conversational interface.
