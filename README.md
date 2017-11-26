@@ -1,5 +1,7 @@
 # habot
 
+![habot](./static/Habot.png)
+
 Habot is a coach for creating daily healthy habits through a conversational interface.
 
 As you’re onboarded with Habot, you rate how well you’re doing in certain life areas. Habot then recommends a set of habits that would be best to work on. After committing to a habit, you track progress with Habot every day through delightful text message exchanges. You earn a new streak every 3 consecutive successful days and are encouraged to collect at least 7 streaks to create the new habit (21 days in total).
