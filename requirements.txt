@@ -36,4 +36,4 @@ timezones==1.9.7
 twilio==6.7.0
 tzlocal==1.4
 urllib3==1.22
-Werkzeug==0.12.2
+Werkzeug==0.15.3
