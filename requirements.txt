@@ -35,5 +35,5 @@ SQLAlchemy==1.1.14
 timezones==1.9.7
 twilio==6.7.0
 tzlocal==1.4
-urllib3==1.22
+urllib3==1.26.5
 Werkzeug==0.12.2
